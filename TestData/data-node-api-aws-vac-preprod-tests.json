@@ -1,0 +1,16 @@
+[
+ {
+    "cloud": "aws",
+    "environment": "preprod",	
+    "brand": "vac",		
+	"digitalCertificatesActivated":true, 
+	"node_user1_email": "ric.uat.car+vac_p_node_001@hotmail.com",	
+	"node_user2_email": "ric.uat.car+vac_p_node_002@hotmail.com",
+	"node_user3_email": "ric.uat.car+vac_p_node_003@hotmail.com",
+	"node_user4_email": "ric.uat.car+vac_p_node_004@hotmail.com",	
+	"recipient_email": "abdelatif.bouriche@richemont.com",
+	"password": "Test1234",
+	"countryfooter": "CH",
+    "language": "en"	
+  }  
+]

@@ -1,0 +1,16 @@
+[
+ {
+    "cloud": "alibaba",
+    "environment": "preprod",	
+    "brand": "vac",		
+	"digitalCertificatesActivated":true, 
+	"node_user1_phone": "+8618600567685",	
+	"node_user2_phone": "+8619572879761",
+	"node_user3_phone": "+8617606363824",
+	"node_user4_phone": "+8616657284009",	
+	"recipient_email": "abdelatif.bouriche@richemont.com",
+	"password": "Test1234",
+	"countryfooter": "CN",
+    "language": "zh-cn"	
+  }  
+]

@@ -1,0 +1,21 @@
+{
+  "name": "ecs-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "eCS-Automation-Testing.js",
+  "scripts": {
+    "newman-version": "newman --version",
+    "start": "ts-node api_automated_tests_main.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "newman": "^5.1.2",
+    "newman-reporter-html": "^1.0.5",
+    "newman-reporter-htmlextra": "^1.17.4",
+    "postman-collection": "^3.6.4",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.7.5"
+  }
+}

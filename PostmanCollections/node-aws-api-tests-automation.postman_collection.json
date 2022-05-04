@@ -1,0 +1,4850 @@
+{
+	"info": {
+		"_postman_id": "3a2c5a13-c13c-450f-baae-a01c73726ed4",
+		"name": "0003 - Node - Blochchain API Automated Test - AWS -  Alibaba",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1 - Certificate Transfer - Testing",
+			"item": [
+				{
+					"name": "1.1 - Login & Generate JWT - User 1",
+					"item": [
+						{
+							"name": "1.1.1 - Login - User 1",
+							"item": [
+								{
+									"name": "1.1.1.1 - Login By Email - User 1 (ROW)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"//If AWS Login with email, If  Alibaba Login by Phone",
+													"var cloud = pm.environment.get(\"cloud\");",
+													"",
+													"if(cloud === \"alibaba\"){",
+													"    pm.test.skip('Status received is ' + pm.response.code, function () {",
+													"        pm.response.to.have.status(401);",
+													"    });",
+													"}",
+													"else{",
+													"    var email = pm.iterationData.get(\"node_user1_email\");",
+													"",
+													"    var jsonResponse; ",
+													"    if (responseCode.code !== 200) {",
+													"        try {        ",
+													"            jsonMessage = JSON.parse(responseBody.message);  ",
+													"            console.log(jsonMessage);",
+													"        }",
+													"        catch(e) {",
+													"            console.log(e);",
+													"        }",
+													"        return;",
+													"    }",
+													"    else {",
+													"        try {  ",
+													"            pm.test(\"CCP token generated and the User whose email: \" + email + \" is logged-in.\", function () {",
+													"                jsonResponse = JSON.parse(responseBody); ",
+													"",
+													"                pm.expect(jsonResponse.token).not.eql(null);",
+													"                pm.expect(pm.response.headers.get(\"ccp_logging_id\")).not.eql(null);",
+													"                ",
+													"                pm.globals.set(\"ccp-login-token\",jsonResponse.token);",
+													"                pm.globals.set(\"ccp-token\",jsonResponse.ccpToken); ",
+													"            });  ",
+													"            ",
+													"        }",
+													"        catch(e) {",
+													"            console.log(e);",
+													"        }",
+													"        return; ",
+													"    }",
+													"}",
+													"",
+													"",
+													"",
+													"",
+													"",
+													"   ",
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"//If AWS Login with email, If  Alibaba Login by Phone",
+													"var cloud = pm.environment.get(\"cloud\");",
+													"",
+													"if(cloud === \"alibaba\"){",
+													"    postman.setNextRequest(\"1.1.1.1 - Login By Phone - User 1  (CN)\");",
+													"}",
+													"",
+													"var node_user1_email = pm.iterationData.get(\"node_user1_email\");",
+													"var password = pm.iterationData.get(\"password\");",
+													"var brand = pm.iterationData.get(\"brand\");",
+													"var country = pm.iterationData.get(\"countryfooter\");",
+													"var language = pm.iterationData.get(\"language\");",
+													"pm.environment.set(\"dc_auto_claim_delay\", 0 ) ;",
+													"pm.environment.set(\"node_first_claim_delay\", 0 ) ;",
+													"",
+													"",
+													"//If Digital certificates is not activated for the brand skip tests",
+													"var digitalCertificatesActivated = pm.iterationData.get(\"digitalCertificatesActivated\");",
+													"",
+													"if(!digitalCertificatesActivated){",
+													"    postman.setNextRequest(null);",
+													"}",
+													"",
+													"//If cron script to initialize certificates in DB is activated ---> reset all certificates to not allocated in the environment variable",
+													"var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));",
+													"",
+													"if(pm.environment.get(\"resetCertificatesInDataBase_scriptActivated\") === \"true\"){     ",
+													"    for (i = 0; i < equipment_list.length;i++)",
+													"    {",
+													"        equipment_list[i].certificateAllocated = \"false\";",
+													"    }",
+													"}",
+													"// Update variable in environment",
+													"pm.environment.set((\"node_dynamic_equipment_collection\"),JSON.stringify(equipment_list));",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/x-www-form-urlencoded"
+											},
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{BasicAuthCustomer}}"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "email",
+													"value": "{{node_user1_email}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												},
+												{
+													"key": "country",
+													"value": "{{countryfooter}}",
+													"type": "text"
+												},
+												{
+													"key": "brand",
+													"value": "{{brand}}",
+													"type": "text"
+												},
+												{
+													"key": "language",
+													"value": "{{language}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/login",
+											"protocol": "https",
+											"host": [
+												"{{ServerModifier}}"
+											],
+											"path": [
+												"customer",
+												"v1",
+												"{{brand}}",
+												"customer",
+												"login"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "1.1.1.1 - Login By Phone - User 1  (CN)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"//If AWS Login with email, If  Alibaba Login by Phone\r",
+													"var cloud = pm.environment.get(\"cloud\");\r",
+													"\r",
+													"if(cloud !== \"alibaba\"){\r",
+													"    pm.test.skip('Status received is ' + pm.response.code, function () {\r",
+													"        pm.response.to.have.status(401);\r",
+													"    });\r",
+													"}\r",
+													"else{\r",
+													"    setTimeout(function(){\r",
+													"        console.log(\"Sleeping for 2 seconds before next request.\");\r",
+													"    }, 2000); \r",
+													"    var phone = pm.iterationData.get(\"node_user1_phone\");\r",
+													"\r",
+													"    var jsonResponse; \r",
+													"    if (responseCode.code !== 200) {\r",
+													"        try {        \r",
+													"            jsonMessage = JSON.parse(responseBody.message);  \r",
+													"            console.log(jsonMessage);\r",
+													"        }\r",
+													"        catch(e) {\r",
+													"            console.log(e);\r",
+													"        }\r",
+													"        return;\r",
+													"    }\r",
+													"    else {\r",
+													"        try {  \r",
+													"            pm.test(\"CCP token generated and the User whose phone number: \" + phone + \" is logged-in.\", function () {\r",
+													"                jsonResponse = JSON.parse(responseBody); \r",
+													"\r",
+													"                pm.expect(jsonResponse.token).not.eql(null);\r",
+													"                pm.expect(pm.response.headers.get(\"ccp_logging_id\")).not.eql(null);\r",
+													"                \r",
+													"                pm.globals.set(\"ccp-login-token\",jsonResponse.token);\r",
+													"                pm.globals.set(\"ccp-token\",jsonResponse.ccpToken);                          \r",
+													"            });  \r",
+													"            \r",
+													"        }\r",
+													"        catch(e) {\r",
+													"            console.log(e);\r",
+													"        }\r",
+													"        return; \r",
+													"    } \r",
+													"}\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"//If AWS Login with email, If  Alibaba Login by Phone\r",
+													"var cloud = pm.environment.get(\"cloud\");\r",
+													"\r",
+													"if(cloud !== \"alibaba\"){\r",
+													"    postman.setNextRequest(\"1.1.2.1- Get Current Customer\");\r",
+													"}\r",
+													"\r",
+													"var node_user1_phone = pm.iterationData.get(\"node_user1_phone\");\r",
+													"var password = pm.iterationData.get(\"password\");\r",
+													"var brand = pm.iterationData.get(\"brand\");\r",
+													"var country = pm.iterationData.get(\"countryfooter\");\r",
+													"var language = pm.iterationData.get(\"language\");\r",
+													"pm.environment.set(\"dc_auto_claim_delay\", 0 ) ;\r",
+													"pm.environment.set(\"node_first_claim_delay\", 0 ) ;\r",
+													"\r",
+													"\r",
+													"//If Digital certificates is not activated for the brand skip tests\r",
+													"var digitalCertificatesActivated = pm.iterationData.get(\"digitalCertificatesActivated\");\r",
+													"\r",
+													"if(!digitalCertificatesActivated){\r",
+													"    postman.setNextRequest(null);\r",
+													"}\r",
+													"\r",
+													"//If cron script to initialize certificates in DB is activated ---> reset all certificates to not allocated in the environment variable\r",
+													"var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));\r",
+													"var resetCerticatesInDataBase_scriptActivated = pm.environment.get(\"resetCerticatesInDataBase_scriptActivated\");\r",
+													"\r",
+													"if(resetCerticatesInDataBase_scriptActivated){     \r",
+													"    for (i = 0; i < equipment_list.length;i++)\r",
+													"    {\r",
+													"        equipment_list[i].certificateAllocated = \"false\";\r",
+													"    }\r",
+													"}\r",
+													"// Update variable in environment\r",
+													"pm.environment.set((\"node_dynamic_equipment_collection\"),JSON.stringify(equipment_list));\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"type": "text",
+												"value": "{{BasicAuthCustomer}}"
+											},
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/x-www-form-urlencoded"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "phone",
+													"value": "{{node_user1_phone}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{password}}",
+													"type": "text"
+												},
+												{
+													"key": "language",
+													"value": "{{language}}",
+													"type": "text"
+												},
+												{
+													"key": "country",
+													"value": "{{countryfooter}}",
+													"type": "text"
+												},
+												{
+													"key": "brand",
+													"value": "{{brand}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/login",
+											"protocol": "https",
+											"host": [
+												"{{ServerModifier}}"
+											],
+											"path": [
+												"customer",
+												"v1",
+												"{{brand}}",
+												"customer",
+												"login"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "1.1.2 - Generate JWT",
+							"item": [
+								{
+									"name": "1.1.2.1- Get Current Customer",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Status received is ' + pm.response.code, function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"var jsonData; ",
+													"try {",
+													"    jsonData = pm.response.json(); ",
+													"} catch (err) {",
+													"    console.log(err); ",
+													"}",
+													"",
+													"if (responseCode.code !== 200) {",
+													"    try {        ",
+													"        jsonMessage = JSON.parse(responseBody.message);  ",
+													"        console.log(jsonMessage);      ",
+													"    }",
+													"    catch(e) {",
+													"        console.log(e);",
+													"    }",
+													"    return;",
+													"}",
+													"else {",
+													"     try {    ",
+													"        pm.test(\"The Customer with ID \" + jsonData.customerNumber + \" is present\", function () {   ",
+													"            pm.expect(jsonData.customerNumber).not.eql(null);   ",
+													"            pm.expect(jsonData.uid).not.eql(null); ",
+													"            pm.expect(jsonData.optIn).not.eql(null); ",
+													"            pm.expect(jsonData.country).not.eql(null);  ",
+													"            // Update the customer uid to pass to the next request to generate jwt    ",
+													"            pm.environment.set(\"CUSTOMER_UUID\", jsonData.uid)     ",
+													"        });   ",
+													"    }",
+													"    catch(e) {",
+													"        console.log(e);",
+													"    }",
+													"    return; ",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"var brand = pm.iterationData.get(\"brand\");",
+													"pm.globals.get(\"ccp-login-token\");",
+													"pm.globals.get(\"ccp-token\");",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Cookie",
+												"value": "ccp-login-token={{ccp-login-token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{BasicAuthCustomer}}",
+												"type": "text"
+											},
+											{
+												"key": "Cookie",
+												"value": "ccp-token={{ccp-token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "ccp-login-token",
+													"value": "{{ccp-login-token}}",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/current",
+											"protocol": "https",
+											"host": [
+												"{{ServerModifier}}"
+											],
+											"path": [
+												"customer",
+												"v1",
+												"{{brand}}",
+												"customer",
+												"current"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "1.1.2.2 - Generate JWT for User 1",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Json Web Token generated for the user.\", function () {\r",
+													"    pm.response.to.have.status(200);  \r",
+													"    pm.expect(pm.response.text()).not.eql(null);     \r",
+													"    pm.environment.set(\"CUSTOMER_JWT_TOKEN\", pm.response.text());       \r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://{{ServerModifier}}/cs-test-automation-tools/v1/certificate/jwt/{{CUSTOMER_UUID}}",
+											"protocol": "https",
+											"host": [
+												"{{ServerModifier}}"
+											],
+											"path": [
+												"cs-test-automation-tools",
+												"v1",
+												"certificate",
+												"jwt",
+												"{{CUSTOMER_UUID}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "1.2 - Link Customer To Product",
+					"item": [
+						{
+							"name": "1.2.1 - Get Customer Products",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData; ",
+											"var productsCount;",
+											"var node_dynamic_equipmentUid = pm.environment.get(\"node_dynamic_equipmentUid\");",
+											"pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_If_Exists\", null);",
+											"pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\", null);",
+											"var serialReady = pm.environment.get(\"serialReadyToAllocate\") ",
+											"",
+											"pm.test('Status received is ' + pm.response.code, function () {",
+											"    pm.response.to.have.status(200);",
+											"    // No certificates ready quit test",
+											"    if(serialReady == null)",
+											"    {",
+											"        console.log(\"No certificates ready to allocate in the list\");",
+											"        postman.setNextRequest(null);",
+											"        pm.expect(serialReady).to.eql(1); ",
+											"    } ",
+											"});",
+											"",
+											" ",
+											"",
+											"try {",
+											"    jsonData = pm.response.json(); ",
+											"    productsCount = jsonData.length",
+											"} catch (err) {",
+											"    console.log(err); ",
+											"}",
+											"",
+											"if (responseCode.code !== 200) {",
+											"    try {        ",
+											"        jsonMessage = JSON.parse(responseBody.message);  ",
+											"        console.log(jsonMessage);  ",
+											"        postman.setNextRequest(null);    ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"    }",
+											"    return;",
+											"}",
+											"else {",
+											"     try {  ",
+											"        ",
+											"        pm.test(\"Customer products: \" + productsCount + \", certificate for SN: \" + serialReady, function() ",
+											"        {           ",
+											"            ",
+											"            for (i = 0; i < productsCount;i++)",
+											"            {",
+											"                if(jsonData[i].uid == node_dynamic_equipmentUid){        ",
+											"                    pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_If_Exists\", jsonData[i].uid);    ",
+											"                }                    ",
+											"            }            ",
+											"            ",
+											"            // Check the last item to remove from the connection",
+											"            if(productsCount > 2 ){",
+											"                if(node_dynamic_equipmentUid != jsonData[productsCount - 1].uid)  ",
+											"                {",
+											"                   pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\", jsonData[productsCount - 1].uid);",
+											"                } ",
+											"                else if(node_dynamic_equipmentUid != jsonData[productsCount - 2].uid){",
+											"                    pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\", jsonData[productsCount - 2].uid);",
+											"                }",
+											"",
+											"                if(pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\") != null){",
+											"                    postman.setNextRequest(\"1.2.3 - Remove Equipment  if than 2 equipments\");   ",
+											"                }                      ",
+											"            }  ",
+											"            else if(pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_If_Exists\") == null){",
+											"                postman.setNextRequest(\"1.2.4 - Link Customer To Product\");   ",
+											"            }                                ",
+											"        });   ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"        pm.test(\"Fail expected document\", function () {",
+											"            pm.expect(pm.response.text()).to.include(\"200\");",
+											"        }); ",
+											"    }",
+											"    return; ",
+											"}",
+											"",
+											"var serialReady = pm.variables.get(\"serialReady\");",
+											"",
+											"if(serialReady == null)",
+											"{",
+											"    console.log(\"yes\");",
+											"    console.log(\"No certificates ready to allocate in the list\");",
+											"    postman.setNextRequest(null);",
+											"    // Raise an exception and quit test",
+											"    pm.test('No certificates ready to allocate in the list ', function () {",
+											"        pm.expect(serialReady).to.eql(1);        ",
+											"    });    ",
+											"           ",
+											"}",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var brand = pm.iterationData.get(\"brand\");",
+											"pm.globals.get(\"ccp-login-token\");",
+											"pm.globals.get(\"ccp-token\");",
+											"",
+											"// Initialize environment variables",
+											"pm.environment.set(\"node_dynamic_serial\", null);",
+											"pm.environment.set(\"node_dynamic_equipmentUid\", null);",
+											"pm.environment.set(\"node_dynamic_equipment_number\", null);   ",
+											"pm.environment.set(\"node_dynamic_equipmentUid\", null); ",
+											"pm.environment.set(\"serialReadyToAllocate\", null);",
+											"pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_If_Exists\", null);",
+											"pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\", null);",
+											"",
+											"// Get a product not used yet",
+											"var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));",
+											"var serialReady = pm.environment.get(\"serialReady\"); ",
+											"",
+											"for (i = 0; i< equipment_list.length;i++)",
+											"{",
+											"    if(equipment_list[i].certificateAllocated === \"false\"){        ",
+											"        console.log(\"Serial used for Digital certificate test: \" + equipment_list[i].serial); ",
+											"        pm.environment.set(\"node_dynamic_serial\", equipment_list[i].serial);",
+											"        pm.environment.set(\"node_dynamic_equipmentUid\", equipment_list[i].uid);",
+											"        pm.environment.set(\"node_dynamic_equipment_number\", equipment_list[i].equipmentNumber);   ",
+											"        pm.environment.set(\"node_dynamic_equipment_index\", i);          ",
+											"        pm.environment.set(\"serialReadyToAllocate\", equipment_list[i].serial);",
+											"        console.log(pm.environment.get(\"serialReadyToAllocate\")); ",
+											"        return equipment_list[i].serial;    ",
+											"    }                    ",
+											"}",
+											"",
+											" ",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Cookie",
+										"type": "text",
+										"value": "ccp-login-token={{ccp-login-token}}"
+									},
+									{
+										"key": "Cookie",
+										"type": "text",
+										"value": "ccpToken={{ccp-token}}"
+									},
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthEquipment}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/equipment/v1/{{brand}}/customer/products?language={{language}}&country={{countryfooter}}",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"equipment",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"products"
+									],
+									"query": [
+										{
+											"key": "language",
+											"value": "{{language}}"
+										},
+										{
+											"key": "country",
+											"value": "{{countryfooter}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.2.2 - Remove Equipment  if already in collection",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"//var equipmentUid = \"139770ab-8361-4ecc-ba7c-00c2d27bddd4\";\r",
+											"var brand = pm.iterationData.get(\"brand\");\r",
+											"var uid_product_to_be_removed_from_DC_collection_If_Exists = pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_If_Exists\");\r",
+											"\r",
+											"pm.globals.get(\"ccp-login-token\");\r",
+											"pm.globals.get(\"ccp-token\");\r",
+											"\r",
+											"\r",
+											"if(pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_If_Exists\") == null){\r",
+											"    postman.setNextRequest();  \r",
+											"}     \r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthCustomer}}"
+									},
+									{
+										"key": "Cookie",
+										"type": "text",
+										"value": "ccp-login-token={{ccp-login-token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/collection/{{uid_product_to_be_removed_from_DC_collection_If_Exists}}",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"collection",
+										"{{uid_product_to_be_removed_from_DC_collection_If_Exists}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.2.3 - Remove Equipment  if than 2 equipments",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"//var equipmentUid = \"139770ab-8361-4ecc-ba7c-00c2d27bddd4\";\r",
+											"var brand = pm.iterationData.get(\"brand\");\r",
+											"var uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts = pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\");\r",
+											"\r",
+											"pm.globals.get(\"ccp-login-token\");\r",
+											"pm.globals.get(\"ccp-token\");\r",
+											"\r",
+											"if(pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\") == null){\r",
+											"    postman.setNextRequest();\r",
+											"} \r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthCustomer}}"
+									},
+									{
+										"key": "Cookie",
+										"type": "text",
+										"value": "ccp-login-token={{ccp-login-token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/collection/{{uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts}}",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"collection",
+										"{{uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.2.4 - Link Customer To Product",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Successful POST request\", function () {\r",
+											"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var brand = pm.iterationData.get(\"brand\");\r",
+											"var node_dynamic_equipmentUid = pm.environment.get(\"node_dynamic_equipmentUid\");\r",
+											"pm.globals.get(\"ccp-login-token\");\r",
+											"pm.globals.get(\"ccp-token\");\r",
+											"\r",
+											" // No certificates ready quit test\r",
+											" var serialReady = pm.environment.get(\"serialReadyToAllocate\") \r",
+											"if(serialReady == null)\r",
+											"{\r",
+											"    console.log(\"No certificates ready to allocate in the list\");\r",
+											"    postman.setNextRequest(null);    \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthCustomer}}"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									},
+									{
+										"key": "Cookie",
+										"type": "text",
+										"value": "ccp-login-token={{ccp-login-token}}"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "equipmentUid",
+											"value": "{{node_dynamic_equipmentUid}}",
+											"type": "text"
+										},
+										{
+											"key": "giftReceiver",
+											"value": "false",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/collection",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"collection"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.2.5 - Find Product by Serial",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var brand = pm.iterationData.get(\"brand\");",
+											"pm.globals.get(\"ccp-login-token\");",
+											"",
+											"var node_dynamic_serial = pm.environment.get(\"node_dynamic_serial\");"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"   ",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"",
+											"});",
+											"",
+											"var jsonData; ",
+											"var node_dynamic_serial = pm.environment.get(\"node_dynamic_serial\");",
+											"",
+											"try {",
+											"    jsonData = pm.response.json();     ",
+											"} catch (err) {",
+											"    console.log(err); ",
+											"}",
+											"if (responseCode.code !== 200) {",
+											"    try {        ",
+											"        jsonMessage = JSON.parse(responseBody.message);  ",
+											"        console.log(jsonMessage);      ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"    }",
+											"    return;",
+											"}",
+											"else {",
+											"     try {    ",
+											"        pm.test(\"The product with serial number: \" + jsonData[0].serial + \" is present\", function () { ",
+											"            pm.expect(jsonData[0].serial).eql(node_dynamic_serial);",
+											"        });   ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"        pm.test(\"Fail expected document\", function () {",
+											"            pm.expect(pm.response.text()).to.include(\"serial\");",
+											"        }); ",
+											"    }",
+											"    return; ",
+											"}",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "serial",
+										"value": "{{serial}}",
+										"type": "text"
+									},
+									{
+										"key": "ccp-login-token",
+										"value": "{{ccp-login-token}}",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{BasicAuthEquipment}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/equipment/v1/{{brand}}/product?serial={{node_dynamic_serial}}",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"equipment",
+										"v1",
+										"{{brand}}",
+										"product"
+									],
+									"query": [
+										{
+											"key": "serial",
+											"value": "{{node_dynamic_serial}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "1.3 - Allocate DC - First Claim",
+					"item": [
+						{
+							"name": "1.3.1 - Allocate Certificate - First Claim",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if(pm.response.code == 412)\r",
+											"{\r",
+											"    // Flag the equipment in collection variables to take the next equipment\r",
+											"    var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));\r",
+											"    var node_dynamic_equipment_number  = pm.environment.get(\"node_dynamic_equipment_number\");\r",
+											"    \r",
+											"    var i = pm.environment.get(\"node_dynamic_equipment_index\");\r",
+											"    equipment_list[i].equipmentUsed = \"true\";            \r",
+											"    pm.environment.set((\"node_dynamic_equipment_collection\"),JSON.stringify(equipment_list));\r",
+											"    console.log(\"Certificate already allocated for the equipment: \"  + node_dynamic_equipment_number);\r",
+											"    pm.test('Certificate already allocated for the equipment: ' + node_dynamic_equipment_number, function () {\r",
+											"        // Pass to the next test\r",
+											"        postman.setNextRequest(\"2.1.1 - Login By Email - User 3  (ROW)\");\r",
+											"        pm.response.to.have.status(200);        \r",
+											"    });    \r",
+											"}\r",
+											"\r",
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage); \r",
+											"        postman.setNextRequest(null);     \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"TransactionHash: \"  + jsonData.transactionHash , function () {    \r",
+											"            pm.expect(jsonData.transactionHash).not.eql(null);  \r",
+											"            // update the status of the serial used to true in the equipment list\r",
+											"            var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));\r",
+											"            var i = pm.environment.get(\"node_dynamic_equipment_index\");\r",
+											"\r",
+											"            equipment_list[i].certificateAllocated = \"true\";\r",
+											"            \r",
+											"            pm.environment.set((\"node_dynamic_equipment_collection\"),JSON.stringify(equipment_list));\r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"dc_auto_claim_delay\", 0 ) ;\r",
+											"pm.environment.set(\"node_first_claim_delay\", 0 ) ;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/allocate/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"allocate",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.3.2 - Get Url For the First Claim",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.expect(pm.response.code).to.be.oneOf([200, 412]); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/allocate/uri/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"allocate",
+										"uri",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "1.4 - Check if DC is Claimed",
+					"item": [
+						{
+							"name": "1.4.1 - Check if DC is claimed",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData; \r",
+											"\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"var dc_auto_claim_delay = pm.environment.get(\"dc_auto_claim_delay\") ;\r",
+											"\r",
+											"pm.test(\"DC is claimed: \" + jsonData.claimed, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    if(!jsonData.claimed)\r",
+											"    {\r",
+											"        setTimeout(function(){\r",
+											"            console.log(\"Sleeping for 60 second before next request.\");\r",
+											"        }, 60000);\r",
+											"        dc_auto_claim_delay += 60;\r",
+											"        pm.environment.set(\"dc_auto_claim_delay\", dc_auto_claim_delay ) ;\r",
+											"        if(dc_auto_claim_delay < 200)\r",
+											"        {\r",
+											"            postman.setNextRequest(\"1.4.1 - Check if DC is claimed\"); \r",
+											"        }\r",
+											"    }\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/claimed/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"claimed",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.4.2 - Check if the Current User is Owner of DC",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData; \r",
+											"\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"\r",
+											"var node_first_claim_delay = pm.environment.get(\"node_first_claim_delay\") ;\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"The user is owner of Certificate: \"  + jsonData, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    if(!jsonData)\r",
+											"    {\r",
+											"        setTimeout(function(){\r",
+											"            console.log(\"Sleeping for 60 second before next request.\");\r",
+											"        }, 60000);\r",
+											"        node_first_claim_delay += 60;\r",
+											"        pm.environment.set(\"node_first_claim_delay\", node_first_claim_delay ) ;\r",
+											"        if(node_first_claim_delay < 300)\r",
+											"        {\r",
+											"            postman.setNextRequest(\"1.4.2 - Check if the Current User is Owner of DC\"); \r",
+											"        }\r",
+											"        else{\r",
+											"            postman.setNextRequest(\"2.1.1 - Login By Email - User 3  (ROW)\");\r",
+											"            pm.expect(jsonData).to.eql(true);\r",
+											"        }\r",
+											"    } \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/ownership/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"ownership",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.4.3 - Get Certificate Details",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"var node_equipment_number = pm.environment.get(\"node_dynamic_equipment_number\");\r",
+											"var node_dynamic_serial = pm.environment.get(\"node_dynamic_serial\");\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); // This must be logging the error on console\r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"Certificate for the equipment number: \"  + jsonData.equipmentNumber + \" exists\", function () {    \r",
+											"                         \r",
+											"            if(jsonData.length>0){\r",
+											"                pm.expect(jsonData.blockChain.tx).not.eql(null); \r",
+											"                pm.expect(jsonData.blockChain.queueId).not.eql(null);               \r",
+											"                pm.expect(jsonData.equipmentNumber).eql(node_equipment_number);  \r",
+											"                pm.expect(jsonData.caseNumber).eql(node_dynamic_serial);  \r",
+											"                pm.expect(jsonData.status).not.eql(null);   \r",
+											"                pm.expect(jsonData.sapReference).not.eql(null);                          \r",
+											"            }            \r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "1.5 - Request Transfer Code",
+					"item": [
+						{
+							"name": "1.5.1 - Request Transfer Code",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    pm.environment.set(\"transferCode\", pm.response.json().transferCode);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/transfer/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"transfer",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.5.2 - Get Certificate Information By Transfer Code",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"//var CUSTOMER_JWT_TOKEN = eval(pm.variables.get(\"FCT_JWT\")).createJWT();\r",
+											"//pm.variables.set(\"CUSTOMER_JWT_TOKEN\", CUSTOMER_JWT_TOKEN);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"var node_dynamic_equipment_number = pm.environment.get(\"node_dynamic_equipment_number\");\r",
+											"var node_dynamic_serial = pm.environment.get(\"node_dynamic_serial\");\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); // This must be logging the error on console\r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"Certificate for the equipment number: \"  + jsonData.equipmentNumber + \" exists\", function () {    \r",
+											"                         \r",
+											"            if(jsonData.length>0){\r",
+											"                pm.expect(jsonData.blockChain.tx).not.eql(null); \r",
+											"                pm.expect(jsonData.blockChain.queueId).not.eql(null);               \r",
+											"                pm.expect(jsonData.equipmentNumber).eql(node_dynamic_equipment_number); \r",
+											"                pm.expect(jsonData.caseNumber).eql(node_dynamic_serial);  \r",
+											"                pm.expect(jsonData.status).not.eql(null);   \r",
+											"                pm.expect(jsonData.sapReference).not.eql(null);                          \r",
+											"            }            \r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/transfer/{{transferCode}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"transfer",
+										"{{transferCode}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "1.5 - Transfer DC  - User 2",
+					"item": [
+						{
+							"name": "1.5.1 - Login By Email - User 2 (ROW)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"//If AWS Login with email, If  Alibaba Login by Phone",
+											"var cloud = pm.environment.get(\"cloud\");",
+											"",
+											"if(cloud === \"alibaba\"){",
+											"    pm.test.skip('Status received is ' + pm.response.code, function () {",
+											"        pm.response.to.have.status(401);",
+											"    });",
+											"}",
+											"else{",
+											"    var email = pm.iterationData.get(\"node_user2_email\");",
+											"",
+											"    var jsonResponse; ",
+											"    if (responseCode.code !== 200) {",
+											"        try {        ",
+											"            jsonMessage = JSON.parse(responseBody.message);  ",
+											"            console.log(jsonMessage);",
+											"        }",
+											"        catch(e) {",
+											"            console.log(e);",
+											"        }",
+											"        return;",
+											"    }",
+											"    else {",
+											"        try {  ",
+											"            pm.test(\"CCP token generated and the User whose email: \" + email + \" is logged-in.\", function () {",
+											"                jsonResponse = JSON.parse(responseBody); ",
+											"",
+											"                pm.expect(jsonResponse.token).not.eql(null);",
+											"                pm.expect(pm.response.headers.get(\"ccp_logging_id\")).not.eql(null);",
+											"                ",
+											"                pm.globals.set(\"ccp-login-token\",jsonResponse.token);",
+											"                pm.globals.set(\"ccp-token\",jsonResponse.ccpToken); ",
+											"            });  ",
+											"            ",
+											"        }",
+											"        catch(e) {",
+											"            console.log(e);",
+											"        }",
+											"        return; ",
+											"    }",
+											"}",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"//If AWS Login with email, If  Alibaba Login by Phone",
+											"var cloud = pm.environment.get(\"cloud\");",
+											"",
+											"if(cloud === \"alibaba\"){",
+											"    postman.setNextRequest(\"1.5.1 - Login By Phone - User 2  (CN)\");",
+											"}",
+											"",
+											"var node_user2_email = pm.iterationData.get(\"node_user2_email\");",
+											"var password = pm.iterationData.get(\"password\");",
+											"var brand = pm.iterationData.get(\"brand\");",
+											"var country = pm.iterationData.get(\"countryfooter\");",
+											"var language = pm.iterationData.get(\"language\");"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									},
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthCustomer}}"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "{{node_user2_email}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										},
+										{
+											"key": "country",
+											"value": "{{countryfooter}}",
+											"type": "text"
+										},
+										{
+											"key": "brand",
+											"value": "{{brand}}",
+											"type": "text"
+										},
+										{
+											"key": "language",
+											"value": "{{language}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/login",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.5.1 - Login By Phone - User 2  (CN)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"//If AWS Login with email, If  Alibaba Login by Phone\r",
+											"var cloud = pm.environment.get(\"cloud\");\r",
+											"\r",
+											"if(cloud !== \"alibaba\"){\r",
+											"    pm.test.skip('Status received is ' + pm.response.code, function () {\r",
+											"        pm.response.to.have.status(401);\r",
+											"    });\r",
+											"}\r",
+											"else{\r",
+											"    setTimeout(function(){\r",
+											"        console.log(\"Sleeping for 2 seconds before next request.\");\r",
+											"    }, 2000); \r",
+											"    var phone = pm.iterationData.get(\"node_user2_phone\");\r",
+											"\r",
+											"    var jsonResponse; \r",
+											"    if (responseCode.code !== 200) {\r",
+											"        try {        \r",
+											"            jsonMessage = JSON.parse(responseBody.message);  \r",
+											"            console.log(jsonMessage);\r",
+											"        }\r",
+											"        catch(e) {\r",
+											"            console.log(e);\r",
+											"        }\r",
+											"        return;\r",
+											"    }\r",
+											"    else {\r",
+											"        try {  \r",
+											"            pm.test(\"CCP token generated and the User whose phone number: \" + phone + \" is logged-in.\", function () {\r",
+											"                jsonResponse = JSON.parse(responseBody); \r",
+											"\r",
+											"                pm.expect(jsonResponse.token).not.eql(null);\r",
+											"                pm.expect(pm.response.headers.get(\"ccp_logging_id\")).not.eql(null);\r",
+											"                \r",
+											"                pm.globals.set(\"ccp-login-token\",jsonResponse.token);\r",
+											"                pm.globals.set(\"ccp-token\",jsonResponse.ccpToken);                          \r",
+											"            });  \r",
+											"            \r",
+											"        }\r",
+											"        catch(e) {\r",
+											"            console.log(e);\r",
+											"        }\r",
+											"        return; \r",
+											"    } \r",
+											"}\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"//If AWS Login with email, If  Alibaba Login by Phone\r",
+											"var cloud = pm.environment.get(\"cloud\");\r",
+											"\r",
+											"if(cloud !== \"alibaba\"){\r",
+											"    postman.setNextRequest(\"1.5.2 - Get Current Customer\");\r",
+											"}\r",
+											"\r",
+											"var node_user1_phone = pm.iterationData.get(\"node_user2_phone\");\r",
+											"var password = pm.iterationData.get(\"password\");\r",
+											"var brand = pm.iterationData.get(\"brand\");\r",
+											"var country = pm.iterationData.get(\"countryfooter\");\r",
+											"var language = pm.iterationData.get(\"language\");\r",
+											"pm.environment.set(\"dc_auto_claim_delay\", 0 ) ;\r",
+											"pm.environment.set(\"node_first_claim_delay\", 0 ) ;\r",
+											"\r",
+											"\r",
+											"//If Digital certificates is not activated for the brand skip tests\r",
+											"var digitalCertificatesActivated = pm.iterationData.get(\"digitalCertificatesActivated\");\r",
+											"\r",
+											"if(!digitalCertificatesActivated){\r",
+											"    postman.setNextRequest(null);\r",
+											"}\r",
+											"\r",
+											"//If cron script to initialize certificates in DB is activated ---> reset all certificates to not allocated in the environment variable\r",
+											"var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));\r",
+											"var resetCerticatesInDataBase_scriptActivated = pm.environment.get(\"resetCerticatesInDataBase_scriptActivated\");\r",
+											"\r",
+											"if(resetCerticatesInDataBase_scriptActivated){     \r",
+											"    for (i = 0; i < equipment_list.length;i++)\r",
+											"    {\r",
+											"        equipment_list[i].certificateAllocated = \"false\";\r",
+											"    }\r",
+											"}\r",
+											"// Update variable in environment\r",
+											"pm.environment.set((\"node_dynamic_equipment_collection\"),JSON.stringify(equipment_list));\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthCustomer}}"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "phone",
+											"value": "{{node_user1_phone}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										},
+										{
+											"key": "language",
+											"value": "{{language}}",
+											"type": "text"
+										},
+										{
+											"key": "country",
+											"value": "{{countryfooter}}",
+											"type": "text"
+										},
+										{
+											"key": "brand",
+											"value": "{{brand}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/login",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.5.2 - Get Current Customer",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"var jsonData; ",
+											"try {",
+											"    jsonData = pm.response.json(); ",
+											"} catch (err) {",
+											"    console.log(err); ",
+											"}",
+											"",
+											"if (responseCode.code !== 200) {",
+											"    try {        ",
+											"        jsonMessage = JSON.parse(responseBody.message);  ",
+											"        console.log(jsonMessage);      ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"    }",
+											"    return;",
+											"}",
+											"else {",
+											"     try {    ",
+											"        pm.test(\"The Customer with ID \" + jsonData.customerNumber + \" is present\", function () {   ",
+											"            pm.expect(jsonData.customerNumber).not.eql(null);   ",
+											"            pm.expect(jsonData.uid).not.eql(null); ",
+											"            pm.expect(jsonData.optIn).not.eql(null); ",
+											"            pm.expect(jsonData.country).not.eql(null);  ",
+											"            // Update the customer uid to pass to the next request to generate jwt    ",
+											"            pm.environment.set(\"CUSTOMER_UUID\", jsonData.uid)     ",
+											"        });   ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"    }",
+											"    return; ",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var brand = pm.iterationData.get(\"brand\");",
+											"pm.globals.get(\"ccp-login-token\");",
+											"pm.globals.get(\"ccp-token\");",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "ccp-login-token={{ccp-login-token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{BasicAuthCustomer}}",
+										"type": "text"
+									},
+									{
+										"key": "Cookie",
+										"value": "ccp-token={{ccp-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "ccp-login-token",
+											"value": "{{ccp-login-token}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/current",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"current"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.5.3 - Generate JWT for User 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Json Web Token generated for the user.\", function () {\r",
+											"    pm.response.to.have.status(200);  \r",
+											"    pm.expect(pm.response.text()).not.eql(null);     \r",
+											"    pm.environment.set(\"CUSTOMER2_JWT_TOKEN\", pm.response.text());       \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://{{ServerModifier}}/cs-test-automation-tools/v1/certificate/jwt/{{CUSTOMER_UUID}}",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"cs-test-automation-tools",
+										"v1",
+										"certificate",
+										"jwt",
+										"{{CUSTOMER_UUID}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.5.4 - Transfer DC",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.expect(pm.response.code).to.be.oneOf([200, 412]);   \r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else if (responseCode.code === 200){\r",
+											"     try {    \r",
+											"        pm.test(\"TransactionHash: \"  + jsonData.transactionHash , function () {    \r",
+											"            pm.expect(jsonData.transactionHash).not.eql(null);  \r",
+											"             // update the status of the serial used to true in the equipment list\r",
+											"            var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));\r",
+											"            var i = pm.environment.get(\"node_dynamic_equipment_index\");\r",
+											"\r",
+											"            equipment_list[i].certificateAllocated = true;\r",
+											"            \r",
+											"            pm.environment.set((\"node_dynamic_equipment_collection\"),JSON.stringify(equipment_list));\r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{CUSTOMER2_JWT_TOKEN}}",
+										"type": "text"
+									},
+									{
+										"key": "CustodyAuthorization",
+										"value": "{{CUSTOMER_JWT_TOKEN}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/transfer/{{transferCode}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"transfer",
+										"{{transferCode}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "1.6 - Check DC Details",
+					"item": [
+						{
+							"name": "1.6.1  - Check if the Current User is Owner of DC",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData; \r",
+											"\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    pm.expect(jsonData).eql(true);     \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{CUSTOMER_JWT_TOKEN}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/ownership/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"ownership",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.6.2  - Check if DC is claimed",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData; \r",
+											"\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    pm.expect(jsonData.claimed).eql(true); \r",
+											"    pm.expect(jsonData.timestamp).not.eql(null); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/claimed/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"claimed",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.6.3  - Get Certificate Details",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"var node_dynamic_equipment_number = pm.iterationData.get(\"node_dynamic_equipment_numberr\");\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); // This must be logging the error on console\r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"Certificate for the equipment number: \"  + jsonData.equipmentNumber + \" exists\", function () {    \r",
+											"                         \r",
+											"            if(jsonData.length>0){\r",
+											"                pm.expect(jsonData.blockChain.tx).not.eql(null); \r",
+											"                pm.expect(jsonData.blockChain.queueId).not.eql(null);               \r",
+											"                pm.expect(jsonData.equipmentNumber).eql(node_dynamic_equipment_number);   \r",
+											"                pm.expect(jsonData.status).not.eql(null);   \r",
+											"                pm.expect(jsonData.sapReference).not.eql(null);                          \r",
+											"            }            \r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{CUSTOMER_JWT_TOKEN}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.6.4  - Get Certificate details by serial",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"var node_dynamic_equipment_number = pm.environment.get(\"node_dynamic_equipment_number\");\r",
+											"var node_dynamic_serial = pm.environment.get(\"node_dynamic_serial\");\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); // This must be logging the error on console\r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"Certificate for equipment: \"  + node_dynamic_equipment_number + \" has the status \" + jsonData.event, function () {    \r",
+											"                         \r",
+											"            pm.expect(jsonData.blockchainId).not.eql(null); \r",
+											"            pm.expect(jsonData.caseNumber).eql(node_dynamic_serial);               \r",
+											"            pm.expect(jsonData.equipmentNumber).eql(node_dynamic_equipment_number);   \r",
+											"            pm.expect(jsonData.event).eql(\"TRANSFERRED\");                              \r",
+											"                       \r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/search/{{brand}}/{{node_dynamic_serial}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"search",
+										"{{brand}}",
+										"{{node_dynamic_serial}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.6.5  - Get Certificate History",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"var node_dynamic_equipment_number = pm.environment.get(\"node_dynamic_equipment_number\");\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); // This must be logging the error on console\r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"Certificate history contains: \"  + jsonData.length + \" item(s)\", function () {    \r",
+											"                         \r",
+											"            if(jsonData.length>0){\r",
+											"                pm.expect(jsonData[jsonData.length-1].blockChain.tx).not.eql(null); \r",
+											"                pm.expect(jsonData[jsonData.length-1].blockChain.queueId).not.eql(null);               \r",
+											"                pm.expect(jsonData[jsonData.length-1].equipmentNumber).eql(node_dynamic_equipment_number);   \r",
+											"                pm.expect(jsonData[jsonData.length-1].status).not.eql(null);                              \r",
+											"            }            \r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{CUSTOMER_JWT_TOKEN}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/history/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"history",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.6.6  - Get List of User Certificates",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"var main_equipmentNumber = pm.iterationData.get(\"main_equipmentNumber\");\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); // This must be logging the error on console\r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"Certificates list contains: \"  + jsonData.data.length + \" certificate(s)\", function () {    \r",
+											"                         \r",
+											"            if(jsonData.length>0){\r",
+											"                pm.expect(jsonData.data[jsonData.data.length-1].blockChain.tx).not.eql(null); \r",
+											"                pm.expect(jsonData.data[jsonData.data.length-1].blockChain.queueId).not.eql(null);               \r",
+											"                pm.expect(jsonData.data[jsonData.data.length-1].equipmentNumber).eql(main_equipmentNumber);   \r",
+											"                pm.expect(jsonData.data[jsonData.data.length-1].status).not.eql(null);                              \r",
+											"            }            \r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{CUSTOMER_JWT_TOKEN}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/list/{{brand}}?pageSize=20&pageNumber=1&sort=&filter",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"list",
+										"{{brand}}"
+									],
+									"query": [
+										{
+											"key": "pageSize",
+											"value": "20",
+											"description": "number of element per page"
+										},
+										{
+											"key": "pageNumber",
+											"value": "1",
+											"description": "from 1 to X"
+										},
+										{
+											"key": "sort",
+											"value": ""
+										},
+										{
+											"key": "filter",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.6.7  - Get List of User Certificates with ownerships",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{CUSTOMER_JWT_TOKEN}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/list/ownership/{{brand}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"list",
+										"ownership",
+										"{{brand}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "1.7 - Check Certificate documents",
+					"item": [
+						{
+							"name": "1.7.1  - Get specific document - Stream representation",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test.skip(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/document/{{dc_documentHash}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"document",
+										"{{dc_documentHash}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.7.2  - Get specific document - Base64 representation",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test.skip(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/document/base64/{{dc_documentHash}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"document",
+										"base64",
+										"{{dc_documentHash}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "1.7.3 - Get List of Documents for a specific Certificate",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test.skip('Status received is ' + pm.response.code, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"var main_equipmentNumber = pm.iterationData.get(\"main_equipmentNumber\");\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); // This must be logging the error on console\r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test.skip(\"Certificates documents list contains: \"  + jsonData.length + \" document(s)\", function () {    \r",
+											"                         \r",
+											"            if(jsonData.length>0){\r",
+											"                pm.expect(jsonData[jsonData.length-1].documentHash).not.eql(null); \r",
+											"                pm.expect(jsonData[jsonData.length-1].label).not.eql(null);               \r",
+											"                pm.expect(jsonData[jsonData.length-1].mimeType).not.eql(null);   \r",
+											"                pm.expect(jsonData[jsonData.length-1].type).not.eql(null);                              \r",
+											"            }            \r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{CUSTOMER_JWT_TOKEN}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/document/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"document",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "1.8 - Send Notification To DC",
+					"item": [
+						{
+							"name": "1.8.1 - Send Notification To DC",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData; \r",
+											"\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"\r",
+											"pm.test(\"DC Notified: \" + jsonData.notified, function () {\r",
+											"    pm.response.to.have.status(200);  \r",
+											"    pm.expect(jsonData.notified).eql(true);      \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"notification\": \"Testing Transfer\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/notify/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"notify",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "2 - Certificate Share - Testing",
+			"item": [
+				{
+					"name": "2.1 - Login & Generate JWT - User 3",
+					"item": [
+						{
+							"name": "2.1.1 - Login By Email - User 3  (ROW)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"//If AWS Login with email, If  Alibaba Login by Phone",
+											"var cloud = pm.environment.get(\"cloud\");",
+											"",
+											"if(cloud === \"alibaba\"){",
+											"    pm.test.skip('Status received is ' + pm.response.code, function () {",
+											"        pm.response.to.have.status(401);",
+											"    });",
+											"}",
+											"else{",
+											"    var email = pm.iterationData.get(\"node_user2_email\");",
+											"",
+											"    var jsonResponse; ",
+											"    if (responseCode.code !== 200) {",
+											"        try {        ",
+											"            jsonMessage = JSON.parse(responseBody.message);  ",
+											"            console.log(jsonMessage);",
+											"        }",
+											"        catch(e) {",
+											"            console.log(e);",
+											"        }",
+											"        return;",
+											"    }",
+											"    else {",
+											"        try {  ",
+											"            pm.test(\"CCP token generated and the User whose email: \" + email + \" is logged-in.\", function () {",
+											"                jsonResponse = JSON.parse(responseBody); ",
+											"",
+											"                pm.expect(jsonResponse.token).not.eql(null);",
+											"                pm.expect(pm.response.headers.get(\"ccp_logging_id\")).not.eql(null);",
+											"                ",
+											"                pm.globals.set(\"ccp-login-token\",jsonResponse.token);",
+											"                pm.globals.set(\"ccp-token\",jsonResponse.ccpToken); ",
+											"            });  ",
+											"            ",
+											"        }",
+											"        catch(e) {",
+											"            console.log(e);",
+											"        }",
+											"        return; ",
+											"    }",
+											"}  ",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"",
+											"var node_user3_email = pm.iterationData.get(\"node_user3_email\");",
+											"var password = pm.iterationData.get(\"password\");",
+											"var brand = pm.iterationData.get(\"brand\");",
+											"var country = pm.iterationData.get(\"countryfooter\");",
+											"var language = pm.iterationData.get(\"language\");",
+											"",
+											"pm.environment.set(\"dc_auto_claim_delay\", 0 ) ;",
+											"pm.environment.set(\"node_first_claim_delay\", 0 ) ;",
+											"",
+											"",
+											"//If Digital certificates is not activated for the brand skip tests",
+											"var digitalCertificatesActivated = pm.iterationData.get(\"digitalCertificatesActivated\");",
+											"",
+											"if(!digitalCertificatesActivated){",
+											"    postman.setNextRequest(null);",
+											"}",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									},
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthCustomer}}"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "{{node_user3_email}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										},
+										{
+											"key": "country",
+											"value": "{{countryfooter}}",
+											"type": "text"
+										},
+										{
+											"key": "brand",
+											"value": "{{brand}}",
+											"type": "text"
+										},
+										{
+											"key": "language",
+											"value": "{{language}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/login",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.1.1 - Login By Phone - User 3  (CN) ",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"//If AWS Login with email, If  Alibaba Login by Phone\r",
+											"var cloud = pm.environment.get(\"cloud\");\r",
+											"\r",
+											"if(cloud !== \"alibaba\"){\r",
+											"    pm.test.skip('Status received is ' + pm.response.code, function () {\r",
+											"        pm.response.to.have.status(401);\r",
+											"    });\r",
+											"}\r",
+											"else{\r",
+											"    setTimeout(function(){\r",
+											"        console.log(\"Sleeping for 2 seconds before next request.\");\r",
+											"    }, 2000); \r",
+											"    var phone = pm.iterationData.get(\"node_user3_phone\");\r",
+											"\r",
+											"    var jsonResponse; \r",
+											"    if (responseCode.code !== 200) {\r",
+											"        try {        \r",
+											"            jsonMessage = JSON.parse(responseBody.message);  \r",
+											"            console.log(jsonMessage);\r",
+											"        }\r",
+											"        catch(e) {\r",
+											"            console.log(e);\r",
+											"        }\r",
+											"        return;\r",
+											"    }\r",
+											"    else {\r",
+											"        try {  \r",
+											"            pm.test(\"CCP token generated and the User whose phone number: \" + phone + \" is logged-in.\", function () {\r",
+											"                jsonResponse = JSON.parse(responseBody); \r",
+											"\r",
+											"                pm.expect(jsonResponse.token).not.eql(null);\r",
+											"                pm.expect(pm.response.headers.get(\"ccp_logging_id\")).not.eql(null);\r",
+											"                \r",
+											"                pm.globals.set(\"ccp-login-token\",jsonResponse.token);\r",
+											"                pm.globals.set(\"ccp-token\",jsonResponse.ccpToken);                          \r",
+											"            });  \r",
+											"            \r",
+											"        }\r",
+											"        catch(e) {\r",
+											"            console.log(e);\r",
+											"        }\r",
+											"        return; \r",
+											"    } \r",
+											"}\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"//If AWS Login with email, If  Alibaba Login by Phone\r",
+											"var cloud = pm.environment.get(\"cloud\");\r",
+											"\r",
+											"if(cloud !== \"alibaba\"){\r",
+											"    postman.setNextRequest(\"2.1.2 - Get Current Customer\");\r",
+											"}\r",
+											"\r",
+											"var node_user1_phone = pm.iterationData.get(\"node_user3_phone\");\r",
+											"var password = pm.iterationData.get(\"password\");\r",
+											"var brand = pm.iterationData.get(\"brand\");\r",
+											"var country = pm.iterationData.get(\"countryfooter\");\r",
+											"var language = pm.iterationData.get(\"language\");\r",
+											"pm.environment.set(\"dc_auto_claim_delay\", 0 ) ;\r",
+											"pm.environment.set(\"node_first_claim_delay\", 0 ) ;\r",
+											"\r",
+											"\r",
+											"//If Digital certificates is not activated for the brand skip tests\r",
+											"var digitalCertificatesActivated = pm.iterationData.get(\"digitalCertificatesActivated\");\r",
+											"\r",
+											"if(!digitalCertificatesActivated){\r",
+											"    postman.setNextRequest(null);\r",
+											"}\r",
+											"\r",
+											"//If cron script to initialize certificates in DB is activated ---> reset all certificates to not allocated in the environment variable\r",
+											"var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));\r",
+											"var resetCerticatesInDataBase_scriptActivated = pm.environment.get(\"resetCerticatesInDataBase_scriptActivated\");\r",
+											"\r",
+											"if(resetCerticatesInDataBase_scriptActivated){     \r",
+											"    for (i = 0; i < equipment_list.length;i++)\r",
+											"    {\r",
+											"        equipment_list[i].certificateAllocated = \"false\";\r",
+											"    }\r",
+											"}\r",
+											"// Update variable in environment\r",
+											"pm.environment.set((\"node_dynamic_equipment_collection\"),JSON.stringify(equipment_list));\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthCustomer}}"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "phone",
+											"value": "{{node_user1_phone}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										},
+										{
+											"key": "language",
+											"value": "{{language}}",
+											"type": "text"
+										},
+										{
+											"key": "country",
+											"value": "{{countryfooter}}",
+											"type": "text"
+										},
+										{
+											"key": "brand",
+											"value": "{{brand}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/login",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.1.2 - Get Current Customer",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"var jsonData; ",
+											"try {",
+											"    jsonData = pm.response.json(); ",
+											"} catch (err) {",
+											"    console.log(err); ",
+											"}",
+											"/*",
+											"const Ajv = require('ajv');",
+											"const jsonValidator = new Ajv({logger: console});",
+											"const currentCustomerSchema = JSON.parse(pm.environment.get(\"schemaCurrentCustomer\"));",
+											"",
+											"pm.test('Current customer Json response body Schema is valid', function() {",
+											"    pm.expect(jsonValidator.validate(currentCustomerSchema, jsonData), JSON.stringify(jsonValidator.errors)).to.be.true;",
+											"});",
+											"*/",
+											"if (responseCode.code !== 200) {",
+											"    try {        ",
+											"        jsonMessage = JSON.parse(responseBody.message);  ",
+											"        console.log(jsonMessage);      ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"    }",
+											"    return;",
+											"}",
+											"else {",
+											"     try {    ",
+											"        pm.test(\"The Customer with ID \" + jsonData.customerNumber + \" is present\", function () {   ",
+											"            pm.expect(jsonData.customerNumber).not.eql(null);   ",
+											"            pm.expect(jsonData.uid).not.eql(null); ",
+											"            pm.expect(jsonData.optIn).not.eql(null); ",
+											"            pm.expect(jsonData.country).not.eql(null);   ",
+											"            // Update the customer uid to pass to the next request to generate jwt    ",
+											"            pm.environment.set(\"CUSTOMER_UUID\", jsonData.uid)    ",
+											"        });   ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"    }",
+											"    return; ",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var brand = pm.iterationData.get(\"brand\");",
+											"pm.globals.get(\"ccp-login-token\");",
+											"pm.globals.get(\"ccp-token\");",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Cookie",
+										"value": "ccp-login-token={{ccp-login-token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{BasicAuthCustomer}}",
+										"type": "text"
+									},
+									{
+										"key": "Cookie",
+										"value": "ccp-token={{ccp-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "ccp-login-token",
+											"value": "{{ccp-login-token}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/current",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"current"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.1.3 - Generate JWT for User 3",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Json Web Token generated for the user.\", function () {\r",
+											"    pm.response.to.have.status(200);  \r",
+											"    pm.expect(pm.response.text()).not.eql(null);     \r",
+											"    pm.environment.set(\"CUSTOMER_JWT_TOKEN\", pm.response.text());       \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://{{ServerModifier}}/cs-test-automation-tools/v1/certificate/jwt/{{CUSTOMER_UUID}}",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"cs-test-automation-tools",
+										"v1",
+										"certificate",
+										"jwt",
+										"{{CUSTOMER_UUID}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "2.2 - Link Customer To Product",
+					"item": [
+						{
+							"name": "2.2.1 - Get Customer Products",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData; ",
+											"var productsCount;",
+											"var node_dynamic_equipmentUid = pm.environment.get(\"node_dynamic_equipmentUid\");",
+											"pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_If_Exists\", null);",
+											"pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\", null);",
+											"var serialReady = pm.environment.get(\"serialReadyToAllocate\") ",
+											"",
+											"pm.test('Status received is ' + pm.response.code, function () {",
+											"    pm.response.to.have.status(200);",
+											"    // No certificates ready quit test",
+											"    if(serialReady == null)",
+											"    {",
+											"        console.log(\"No certificates ready to allocate in the list\");",
+											"        postman.setNextRequest(null);",
+											"        pm.expect(serialReady).to.eql(1); ",
+											"    } ",
+											"});",
+											"",
+											"try {",
+											"    jsonData = pm.response.json(); ",
+											"    productsCount = jsonData.length",
+											"} catch (err) {",
+											"    console.log(err); ",
+											"}",
+											"",
+											"if (responseCode.code !== 200) {",
+											"    try {        ",
+											"        jsonMessage = JSON.parse(responseBody.message);  ",
+											"        console.log(jsonMessage);  ",
+											"        postman.setNextRequest(null);    ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"    }",
+											"    return;",
+											"}",
+											"else {",
+											"     try {  ",
+											"        pm.test(\"Customer products: \" + productsCount + \", certificate for SN: \" + serialReady, function() ",
+											"        {           ",
+											"            for (i = 0; i < productsCount;i++)",
+											"            {",
+											"                if(jsonData[i].uid == node_dynamic_equipmentUid){        ",
+											"                    pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_If_Exists\", jsonData[i].uid);    ",
+											"                }                    ",
+											"            }            ",
+											"            ",
+											"            // Check the last item to remove from the connection",
+											"            if(productsCount > 2 ){",
+											"                if(node_dynamic_equipmentUid != jsonData[productsCount - 1].uid)  ",
+											"                {",
+											"                   pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\", jsonData[productsCount - 1].uid);",
+											"                } ",
+											"                else if(node_dynamic_equipmentUid != jsonData[productsCount - 2].uid){",
+											"                    pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\", jsonData[productsCount - 2].uid);",
+											"                }",
+											"",
+											"                if(pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\") != null){",
+											"                    postman.setNextRequest(\"2.2.3 - Remove Equipment  if than 2 equipments\");   ",
+											"                }                      ",
+											"            }  ",
+											"            else if(pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_If_Exists\") == null){",
+											"                postman.setNextRequest(\"2.2.4 - Link Customer To Product\");   ",
+											"            }                                ",
+											"        });   ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"        pm.test(\"Fail expected document\", function () {",
+											"            pm.expect(pm.response.text()).to.include(\"200\");",
+											"        }); ",
+											"    }",
+											"    return; ",
+											"}",
+											"",
+											"var serialReady = pm.variables.get(\"serialReady\");",
+											"",
+											"if(serialReady == null)",
+											"{",
+											"    console.log(\"yes\");",
+											"    console.log(\"No certificates ready to allocate in the list\");",
+											"    postman.setNextRequest(null);",
+											"    // Raise an exception and quit test",
+											"    pm.test('No certificates ready to allocate in the list ', function () {",
+											"        pm.expect(serialReady).to.eql(1);        ",
+											"    });    ",
+											"}",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var brand = pm.iterationData.get(\"brand\");",
+											"pm.globals.get(\"ccp-login-token\");",
+											"pm.globals.get(\"ccp-token\");",
+											"",
+											"// Initialize environment variables",
+											"pm.environment.set(\"node_dynamic_serial\", null);",
+											"pm.environment.set(\"node_dynamic_equipmentUid\", null);",
+											"pm.environment.set(\"node_dynamic_equipment_number\", null);   ",
+											"pm.environment.set(\"node_dynamic_equipmentUid\", null); ",
+											"pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_If_Exists\", null);",
+											"pm.environment.set(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\", null);",
+											"",
+											"// Get a product not used yet",
+											"var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));",
+											"var serialReady;",
+											"",
+											"for (i = 0; i< equipment_list.length;i++)",
+											"{",
+											"    if(equipment_list[i].certificateAllocated === \"false\"){        ",
+											"        console.log(\"Serial used for Digital certificate test: \" + equipment_list[i].serial); ",
+											"        pm.environment.set(\"node_dynamic_serial\", equipment_list[i].serial);",
+											"        pm.environment.set(\"node_dynamic_equipmentUid\", equipment_list[i].uid);",
+											"        pm.environment.set(\"node_dynamic_equipment_number\", equipment_list[i].equipmentNumber);   ",
+											"        pm.environment.set(\"node_dynamic_equipment_index\", i);  ",
+											"        pm.environment.set(\"serialReadyToAllocate\", equipment_list[i].serial);",
+											"        console.log(pm.environment.get(\"serialReadyToAllocate\"));         ",
+											"        return equipment_list[i].serial;    ",
+											"    }                    ",
+											"}",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Cookie",
+										"type": "text",
+										"value": "ccp-login-token={{ccp-login-token}}"
+									},
+									{
+										"key": "Cookie",
+										"type": "text",
+										"value": "ccpToken={{ccp-token}}"
+									},
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthEquipment}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/equipment/v1/{{brand}}/customer/products?language={{language}}&country={{countryfooter}}",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"equipment",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"products"
+									],
+									"query": [
+										{
+											"key": "language",
+											"value": "{{language}}"
+										},
+										{
+											"key": "country",
+											"value": "{{countryfooter}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.2.2 - Remove Equipment  if already in collection",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"//var equipmentUid = \"139770ab-8361-4ecc-ba7c-00c2d27bddd4\";\r",
+											"var brand = pm.iterationData.get(\"brand\");\r",
+											"var uid_product_to_be_removed_from_DC_collection_If_Exists = pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_If_Exists\");\r",
+											"\r",
+											"pm.globals.get(\"ccp-login-token\");\r",
+											"pm.globals.get(\"ccp-token\");\r",
+											"\r",
+											"\r",
+											"if(pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_If_Exists\") == null){\r",
+											"    postman.setNextRequest();  \r",
+											"}     \r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthCustomer}}"
+									},
+									{
+										"key": "Cookie",
+										"type": "text",
+										"value": "ccp-login-token={{ccp-login-token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/collection/{{uid_product_to_be_removed_from_DC_collection_If_Exists}}",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"collection",
+										"{{uid_product_to_be_removed_from_DC_collection_If_Exists}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.2.3 - Remove Equipment  if than 2 equipments",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"//var equipmentUid = \"139770ab-8361-4ecc-ba7c-00c2d27bddd4\";\r",
+											"var brand = pm.iterationData.get(\"brand\");\r",
+											"var uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts = pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\");\r",
+											"\r",
+											"pm.globals.get(\"ccp-login-token\");\r",
+											"pm.globals.get(\"ccp-token\");\r",
+											"\r",
+											"if(pm.environment.get(\"uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts\") == null){\r",
+											"    postman.setNextRequest();\r",
+											"} \r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthCustomer}}"
+									},
+									{
+										"key": "Cookie",
+										"type": "text",
+										"value": "ccp-login-token={{ccp-login-token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/collection/{{uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts}}",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"collection",
+										"{{uid_product_to_be_removed_from_DC_collection_IfMoreThanTwoProducts}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.2.4 - Link Customer To Product",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Successful POST request\", function () {\r",
+											"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var brand = pm.iterationData.get(\"brand\");\r",
+											"var dc_dynamic_equipmentUid = pm.environment.get(\"dc_dynamic_equipmentUid\");\r",
+											"pm.globals.get(\"ccp-login-token\");\r",
+											"pm.globals.get(\"ccp-token\");\r",
+											"\r",
+											"// No certificates ready quit test\r",
+											"var serialReady = pm.environment.get(\"serialReadyToAllocate\") \r",
+											"if(serialReady == null)\r",
+											"{\r",
+											"    console.log(\"No certificates ready to allocate in the list\");\r",
+											"    postman.setNextRequest(null);    \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{BasicAuthCustomer}}"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-www-form-urlencoded"
+									},
+									{
+										"key": "Cookie",
+										"type": "text",
+										"value": "ccp-login-token={{ccp-login-token}}"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "equipmentUid",
+											"value": "{{node_dynamic_equipmentUid}}",
+											"type": "text"
+										},
+										{
+											"key": "giftReceiver",
+											"value": "false",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/customer/v1/{{brand}}/customer/collection",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"customer",
+										"v1",
+										"{{brand}}",
+										"customer",
+										"collection"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.2.5 - Find Product by Serial",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var brand = pm.iterationData.get(\"brand\");",
+											"pm.globals.get(\"ccp-login-token\");",
+											"",
+											"var node_dynamic_serial = pm.environment.get(\"node_dynamic_serial\");"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"   ",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"",
+											"});",
+											"",
+											"var jsonData; ",
+											"var node_dynamic_serial = pm.environment.get(\"node_dynamic_serial\");",
+											"try {",
+											"    jsonData = pm.response.json();     ",
+											"} catch (err) {",
+											"    console.log(err); ",
+											"}",
+											"if (responseCode.code !== 200) {",
+											"    try {        ",
+											"        jsonMessage = JSON.parse(responseBody.message);  ",
+											"        console.log(jsonMessage);      ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"    }",
+											"    return;",
+											"}",
+											"else {",
+											"     try {    ",
+											"        pm.test(\"The product with serial number: \" + jsonData[0].serial + \" is present\", function () { ",
+											"            pm.expect(jsonData[0].serial).eql(node_dynamic_serial);  ",
+											"        });   ",
+											"    }",
+											"    catch(e) {",
+											"        console.log(e);",
+											"        pm.test(\"Fail expected document\", function () {",
+											"            pm.expect(pm.response.text()).to.include(\"serial\");",
+											"        }); ",
+											"    }",
+											"    return; ",
+											"}",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "serial",
+										"value": "{{serial}}",
+										"type": "text"
+									},
+									{
+										"key": "ccp-login-token",
+										"value": "{{ccp-login-token}}",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{BasicAuthEquipment}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "https://{{ServerModifier}}/equipment/v1/{{brand}}/product?serial={{node_dynamic_serial}}",
+									"protocol": "https",
+									"host": [
+										"{{ServerModifier}}"
+									],
+									"path": [
+										"equipment",
+										"v1",
+										"{{brand}}",
+										"product"
+									],
+									"query": [
+										{
+											"key": "serial",
+											"value": "{{node_dynamic_serial}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "2.3 - Allocate DC - First Claim",
+					"item": [
+						{
+							"name": "2.3.1 - Allocate Certificate - First Claim",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if(pm.response.code == 412)\r",
+											"{\r",
+											"    // Flag the equipment in collection variables to take the next equipment\r",
+											"    var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));\r",
+											"    var node_dynamic_equipment_number  = pm.environment.get(\"node_dynamic_equipment_number\");\r",
+											"    \r",
+											"    var i = pm.environment.get(\"node_dynamic_equipment_index\");\r",
+											"    equipment_list[i].certificateAllocated = \"true\";            \r",
+											"    pm.environment.set((\"node_dynamic_equipment_collection\"),JSON.stringify(equipment_list));\r",
+											"    console.log(\"Certificate already allocated for the equipment: \"  + node_dynamic_equipment_number);\r",
+											"    pm.test('Certificate already allocated for the equipment: ' + node_dynamic_equipment_number, function () {\r",
+											"        postman.setNextRequest(null);\r",
+											"        pm.response.to.have.status(200);        \r",
+											"    });    \r",
+											"}\r",
+											"\r",
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);  \r",
+											"        postman.setNextRequest(null);    \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"TransactionHash: \"  + jsonData.transactionHash , function () {    \r",
+											"            pm.expect(jsonData.transactionHash).not.eql(null);  \r",
+											"            // update the status of the serial used to true in the equipment list\r",
+											"            var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));\r",
+											"            var i = pm.environment.get(\"node_dynamic_equipment_index\");\r",
+											"\r",
+											"            equipment_list[i].certificateAllocated = true;\r",
+											"            \r",
+											"            pm.environment.set((\"node_dynamic_equipment_collection\"),JSON.stringify(equipment_list));\r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"dc_auto_claim_delay\", 0 ) ;\r",
+											"pm.environment.set(\"node_first_claim_delay\", 0 ) ;"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/allocate/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"allocate",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.3.2 - Get Url For the First Claim",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.expect(pm.response.code).to.be.oneOf([200, 412]); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/allocate/uri/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"allocate",
+										"uri",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "2.4 - Check if DC is Claimed",
+					"item": [
+						{
+							"name": "2.4.1 - Check if DC is claimed",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData; \r",
+											"\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"var dc_auto_claim_delay = pm.environment.get(\"dc_auto_claim_delay\") ;\r",
+											"\r",
+											"pm.test(\"DC is claimed: \" + jsonData.claimed, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    if(!jsonData.claimed)\r",
+											"    {\r",
+											"        setTimeout(function(){\r",
+											"            console.log(\"Sleeping for 60 second before next request.\");\r",
+											"        }, 60000);\r",
+											"        dc_auto_claim_delay += 60;\r",
+											"        pm.environment.set(\"dc_auto_claim_delay\", dc_auto_claim_delay ) ;\r",
+											"        if(dc_auto_claim_delay < 200)\r",
+											"        {\r",
+											"            postman.setNextRequest(\"2.4.1 - Check if DC is claimed\"); \r",
+											"        }\r",
+											"    }\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/claimed/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"claimed",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.4.2 - Check if the Current User is Owner of DC",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData; \r",
+											"\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"\r",
+											"var node_first_claim_delay = pm.environment.get(\"node_first_claim_delay\") ;\r",
+											"\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"The user is owner of Certificate: \"  + jsonData, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    if(!jsonData)\r",
+											"    {\r",
+											"        setTimeout(function(){\r",
+											"            console.log(\"Sleeping for 60 second before next request.\");\r",
+											"        }, 60000);\r",
+											"        node_first_claim_delay += 60;\r",
+											"        pm.environment.set(\"node_first_claim_delay\", node_first_claim_delay ) ;\r",
+											"        if(node_first_claim_delay < 300)\r",
+											"        {\r",
+											"            postman.setNextRequest(\"2.4.2 - Check if the Current User is Owner of DC\"); \r",
+											"        }\r",
+											"        else{\r",
+											"            postman.setNextRequest(null);\r",
+											"            pm.expect(jsonData).to.eql(true);\r",
+											"        }\r",
+											"    } \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/ownership/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"ownership",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.4.3 - Get Certificate Details",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status received is ' + pm.response.code, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"var node_equipment_number = pm.environment.get(\"node_dynamic_equipment_number\");\r",
+											"var node_dynamic_serial = pm.environment.get(\"node_dynamic_serial\");\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); // This must be logging the error on console\r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"Certificate for the equipment number: \"  + jsonData.equipmentNumber + \" exists\", function () {    \r",
+											"                         \r",
+											"            if(jsonData.length>0){\r",
+											"                pm.expect(jsonData.blockChain.tx).not.eql(null); \r",
+											"                pm.expect(jsonData.blockChain.queueId).not.eql(null);               \r",
+											"                pm.expect(jsonData.equipmentNumber).eql(node_equipment_number);  \r",
+											"                pm.expect(jsonData.caseNumber).eql(node_dynamic_serial);  \r",
+											"                pm.expect(jsonData.status).not.eql(null);   \r",
+											"                pm.expect(jsonData.sapReference).not.eql(null);                          \r",
+											"            }            \r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "2.5 - Sharing Digital Certificate",
+					"item": [
+						{
+							"name": "2.5.1 - Request Sharing Code",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Sharing code generated: \" + pm.response.json().shareCode, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    pm.environment.set(\"shareCode\", pm.response.json().shareCode);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var node_dynamic_equipment_number = pm.environment.get(\"node_dynamic_equipment_number\");"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/share/{{brand}}/{{node_dynamic_equipment_number}}/3000",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"share",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}",
+										"3000"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.5.2 - Get the Certificate Information by ShareCode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"var node_dynamic_equipment_number = pm.environment.get(\"node_dynamic_equipment_number\");\r",
+											"var node_dynamic_serial = pm.environment.get(\"node_dynamic_serial\");\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); // This must be logging the error on console\r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"Certificate for the equipment number: \"  + jsonData.equipmentNumber + \" exists\", function () {    \r",
+											"                         \r",
+											"            if(jsonData.length>0){\r",
+											"                pm.expect(jsonData.blockChain.tx).not.eql(null); \r",
+											"                pm.expect(jsonData.blockChain.queueId).not.eql(null);               \r",
+											"                pm.expect(jsonData.equipmentNumber).eql(node_dynamic_equipment_number); \r",
+											"                pm.expect(jsonData.caseNumber).eql(node_dynamic_serial);  \r",
+											"                pm.expect(jsonData.status).not.eql(null);   \r",
+											"                pm.expect(jsonData.sapReference).not.eql(null);   \r",
+											"\r",
+											"                 // update the status of the serial used to true in the equipment list\r",
+											"                var equipment_list = JSON.parse(pm.environment.get(\"node_dynamic_equipment_collection\"));\r",
+											"                var i = pm.environment.get(\"node_dynamic_equipment_index\");\r",
+											"\r",
+											"                equipment_list[i].certificateAllocated = true;\r",
+											"                \r",
+											"                pm.environment.set((\"node_dynamic_equipment_collection\"),JSON.stringify(equipment_list));                       \r",
+											"            }            \r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{CUSTOMER_JWT_TOKEN}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/share/{{shareCode}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"share",
+										"{{shareCode}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.5.3 - Renew DC Sharing Code",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"//var CUSTOMER_JWT_TOKEN = eval(pm.variables.get(\"FCT_JWT\")).createJWT();\r",
+											"//pm.variables.set(\"CUSTOMER_JWT_TOKEN\", CUSTOMER_JWT_TOKEN);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Share new: \" + pm.response.json().shareCode, function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"    pm.expect( pm.response.json().shareCode).not.eql(null); \r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/share/{{shareCode}}/{{delayInMilliseconds}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"share",
+										"{{shareCode}}",
+										"{{delayInMilliseconds}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.5.4 - Get All the Shares By Certificate",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData; \r",
+											"var node_dynamic_equipment_number = pm.environment.get(\"node_dynamic_equipment_number\");\r",
+											"var node_dynamic_serial = pm.environment.get(\"node_dynamic_serial\");\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); // This must be logging the error on console\r",
+											"}\r",
+											"if (responseCode.code !== 200) {\r",
+											"    try {        \r",
+											"        jsonMessage = JSON.parse(responseBody.message);  \r",
+											"        console.log(jsonMessage);      \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"     try {    \r",
+											"        pm.test(\"Shares by certifcate for equipment number \"  + node_dynamic_equipment_number + \" : \" + jsonData.length + \" share(s)\", function () {    \r",
+											"                         \r",
+											"            if(jsonData.length>0){\r",
+											"                pm.expect(jsonData[0].shareCode).not.eql(null); \r",
+											"                pm.expect(jsonData[0].shareCodeUrl).not.eql(null);  \r",
+											"            }            \r",
+											"        });   \r",
+											"    }\r",
+											"    catch(e) {\r",
+											"        console.log(e);\r",
+											"    }\r",
+											"    return; \r",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/share/list/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"share",
+										"list",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.5.5 - Cancel DC Sharing Code",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.expect(pm.response.code).to.be.oneOf([200, 204]);   \r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{CUSTOMER_JWT_TOKEN}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/share/{{shareCode}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"share",
+										"{{shareCode}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "2.6 - Send Notification To DC",
+					"item": [
+						{
+							"name": "2.6.1 - Send Notification To DC",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData; \r",
+											"\r",
+											"try {\r",
+											"    jsonData = pm.response.json(); \r",
+											"} catch (err) {\r",
+											"    console.log(err); \r",
+											"}\r",
+											"\r",
+											"pm.test(\"DC Notified: \" + jsonData.notified, function () {\r",
+											"    pm.response.to.have.status(200);  \r",
+											"    pm.expect(jsonData.notified).eql(true);      \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "{{CUSTOMER_JWT_TOKEN}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"notification\": \"Testing Share\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{node_url}}/api/certificate/notify/{{brand}}/{{node_dynamic_equipment_number}}",
+									"protocol": "https",
+									"host": [
+										"{{node_url}}"
+									],
+									"path": [
+										"api",
+										"certificate",
+										"notify",
+										"{{brand}}",
+										"{{node_dynamic_equipment_number}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

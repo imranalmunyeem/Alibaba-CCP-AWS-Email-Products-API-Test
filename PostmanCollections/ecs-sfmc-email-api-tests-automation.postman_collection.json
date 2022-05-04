@@ -1,0 +1,3478 @@
+{
+	"info": {
+		"_postman_id": "b7535b97-371d-47b1-be89-7866777cbf3f",
+		"name": "006 - Testing SFMC APIs V2  Auto Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Access Login",
+			"item": [
+				{
+					"name": "Request oAuth Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200,201,202]);",
+									"});",
+									"",
+									"var jsonData;",
+									"pm.test(\"valid JSON returned\", function () {",
+									"    jsonData = pm.response.json();",
+									"    pm.expect(typeof(jsonData[\"access_token\"])).to.be.oneOf(['string']);",
+									"});",
+									"",
+									"var token = jsonData[\"access_token\"];",
+									"pm.environment.set(\"OAUTH_TOKEN\", token);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var CLIENT_SECRET = pm.environment.get(\"CLIENT_SECRET\");\r",
+									"var CLIENT_ID = pm.environment.get(\"CLIENT_ID\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"grant_type\": \"client_credentials\",\n\t\"client_id\": \"{{CLIENT_ID}}\",\n\t\"client_secret\": \"{{CLIENT_SECRET}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.auth.marketingcloudapis.com/v2/token",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"auth",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"v2",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Create Transactional Send Definition -- DYNAMIC",
+			"item": [
+				{
+					"name": "Create Transactional Send Definition -- DYNAMIC",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  definitionKey  = pm.iterationData.get(\"definitionKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.environment.set(\"definitionKey\", definitionKey);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"status\": \"Active\",\n    \"name\": \"{{definitionKey}}\",\n    \"description\": \"Created via REST\",\n    \"classification\": \"EcsTransactional\",\n    \"content\": {\n        \"customerKey\": \"65a77b30-98fa-4966-9c7b-025fcfc651ea\"\n    },\n    \"subscriptions\": {\n        \"list\": \"All Subscribers - 220\",\n        \"dataExtension\": \"EcsDemoDe\",\n        \"autoAddSubscriber\": true,\n        \"updateSubscriber\": true\n    },\n    \"options\": {\n        \"trackLinks\": false,\n        \"cc\": [\n            \"{{cc}}\"\n        ],\n        \"bcc\": [\n           \"{{bcc}}\" \n        ],\n        \"createJourney\": true\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/definitions/",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"definitions",
+								""
+							]
+						},
+						"description": "https://developer.salesforce.com/docs/atlas.en-us.mc-apis.meta/mc-apis/createSendDefinition.htm"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Send Emails",
+			"item": [
+				{
+					"name": "TC_001_1-Rot Preregistraion No service Kit",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"1\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"WithServiceKit\": \"FALSE\",\n                \"PreregistrationNumber\": \"11876901\",                \n                \"AttachmentID\":\"{{AttachmentID}}\",\n\t\t\t\t\"OrderNumber\": \"1183001\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_002_1-Rot Preregistraion With service kit",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"1\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"WithServiceKit\": \"TRUE\",\n                \"PreregistrationNumber\": \"11876902\",                \n                \"AttachmentID\":\"{{AttachmentID}}\",\n\t\t\t\t\"OrderNumber\": \"1183002\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_003_2-Rot Preregistration Kit without service kit",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{OAUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"2\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"11876903\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183003\",\n\t\t\t\t\"WithServiceKit\": \"False\",\n\t\t\t\t\"KitDeliveryFirstName1\":\"{{KitDeliveryFirstName1}}\",\n \t\t\t\t\"KitDeliveryLastName1\":\"{{KitDeliveryLastName1}}\",\n\t\t\t\t\"KitDeliveryFirstName2\":\"{{KitDeliveryFirstName2}}\",\n\t\t\t\t\"KitDeliveryLastName2\":\"{{KitDeliveryLastName2}}\",\n\t\t\t\t\"KitDeliveryAddress2\":\"{{KitDeliveryAddress2}}\",\n                \"KitDeliveryAddress5\":\"{{KitDeliveryAddress5}}\",\n                \"KitDeliveryAddress7\":\"{{KitDeliveryAddress7}}\",\n\t\t\t\t\"KitDeliveryAddress9\":\"{{KitDeliveryAddress9}}\",\n                \"KitDeliveryZipCode\":\"{{KitDeliveryZipCode}}\",\n\t\t\t\t\"KitDeliveryCountry\":\"{{KitDeliveryCountry}}\",\n                \"PhoneNumber\":\"{{PhoneNumber}}\",\n                \"AttachmentID\":\"{{AttachmentID}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_004_2-Rot Preregistration Kit with service kit",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"2\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"11876904\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183004\",\n\t\t\t\t\"WithServiceKit\": \"True\",\n\t\t\t\t\"KitDeliveryFirstName1\":\"{{KitDeliveryFirstName1}}\",\n \t\t\t\t\"KitDeliveryLastName1\":\"{{KitDeliveryLastName1}}\",\n\t\t\t\t\"KitDeliveryFirstName2\":\"{{KitDeliveryFirstName2}}\",\n\t\t\t\t\"KitDeliveryLastName2\":\"{{KitDeliveryLastName2}}\",\n\t\t\t\t\"KitDeliveryAddress2\":\"{{KitDeliveryAddress2}}\",\n                \"KitDeliveryAddress5\":\"{{KitDeliveryAddress5}}\",\n                \"KitDeliveryAddress7\":\"{{KitDeliveryAddress7}}\",\n\t\t\t\t\"KitDeliveryAddress9\":\"{{KitDeliveryAddress9}}\",\n                \"KitDeliveryZipCode\":\"{{KitDeliveryZipCode}}\",\n\t\t\t\t\"KitDeliveryCountry\":\"{{KitDeliveryCountry}}\",\n                \"PhoneNumber\":\"{{PhoneNumber}}\",\n                \"AttachmentID\":\"{{AttachmentID}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_005_3-Rot Preregistration Remind Kit with service kit",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"3\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"11876905\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183005\",\n\t\t\t\t\"WithServiceKit\": \"True\",\n\t\t\t\t\"KitDeliveryFirstName1\":\"{{KitDeliveryFirstName1}}\",\n \t\t\t\t\"KitDeliveryLastName1\":\"{{KitDeliveryLastName1}}\",\n\t\t\t\t\"KitDeliveryFirstName2\":\"{{KitDeliveryFirstName2}}\",\n\t\t\t\t\"KitDeliveryLastName2\":\"{{KitDeliveryLastName2}}\",\n\t\t\t\t\"KitDeliveryAddress2\":\"{{KitDeliveryAddress2}}\",\n                \"KitDeliveryAddress5\":\"{{KitDeliveryAddress5}}\",\n                \"KitDeliveryAddress7\":\"{{KitDeliveryAddress7}}\",\n\t\t\t\t\"KitDeliveryAddress9\":\"{{KitDeliveryAddress9}}\",\n                \"KitDeliveryZipCode\":\"{{KitDeliveryZipCode}}\",\n\t\t\t\t\"KitDeliveryCountry\":\"{{KitDeliveryCountry}}\",\n                \"PhoneNumber\":\"{{PhoneNumber}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_006_3-Rot Preregistration Remind Kit without service kit",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"3\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"11876906\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183006\",\n\t\t\t\t\"WithServiceKit\": \"True\",\n\t\t\t\t\"KitDeliveryFirstName1\":\"{{KitDeliveryFirstName1}}\",\n \t\t\t\t\"KitDeliveryLastName1\":\"{{KitDeliveryLastName1}}\",\n\t\t\t\t\"KitDeliveryFirstName2\":\"{{KitDeliveryFirstName2}}\",\n\t\t\t\t\"KitDeliveryLastName2\":\"{{KitDeliveryLastName2}}\",\n\t\t\t\t\"KitDeliveryAddress2\":\"{{KitDeliveryAddress2}}\",\n                \"KitDeliveryAddress5\":\"{{KitDeliveryAddress5}}\",\n                \"KitDeliveryAddress7\":\"{{KitDeliveryAddress7}}\",\n\t\t\t\t\"KitDeliveryAddress9\":\"{{KitDeliveryAddress9}}\",\n                \"KitDeliveryZipCode\":\"{{KitDeliveryZipCode}}\",\n\t\t\t\t\"KitDeliveryCountry\":\"{{KitDeliveryCountry}}\",\n                \"PhoneNumber\":\"{{PhoneNumber}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_007_4-Rot Tracking confirmation Convert No web Account",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"4\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"02\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"11876907\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183007\",\n\t\t\t\t\"HasWebAccount\": \"FALSE\",\n\t\t\t\t\"KitDeliveryFirstName1\":\"{{KitDeliveryFirstName1}}\",\n \t\t\t\t\"KitDeliveryLastName1\":\"{{KitDeliveryLastName1}}\",\n\t\t\t\t\"KitDeliveryFirstName2\":\"{{KitDeliveryFirstName2}}\",\n\t\t\t\t\"KitDeliveryLastName2\":\"{{KitDeliveryLastName2}}\",\n\t\t\t\t\"KitDeliveryAddress2\":\"{{KitDeliveryAddress2}}\",\n                \"KitDeliveryAddress5\":\"{{KitDeliveryAddress5}}\",\n                \"KitDeliveryAddress7\":\"{{KitDeliveryAddress7}}\",\n\t\t\t\t\"KitDeliveryAddress9\":\"{{KitDeliveryAddress9}}\",\n                \"KitDeliveryZipCode\":\"{{KitDeliveryZipCode}}\",\n\t\t\t\t\"KitDeliveryCountry\":\"{{KitDeliveryCountry}}\",\n                \"PhoneNumber\":\"{{PhoneNumber}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_008_4-Rot Tracking confirmation Convert  web Account",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"4\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"02\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"11876908\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183008\",\n\t\t\t\t\"HasWebAccount\": \"TRUE\",\n\t\t\t\t\"KitDeliveryFirstName1\":\"{{KitDeliveryFirstName1}}\",\n \t\t\t\t\"KitDeliveryLastName1\":\"{{KitDeliveryLastName1}}\",\n\t\t\t\t\"KitDeliveryFirstName2\":\"{{KitDeliveryFirstName2}}\",\n\t\t\t\t\"KitDeliveryLastName2\":\"{{KitDeliveryLastName2}}\",\n\t\t\t\t\"KitDeliveryAddress2\":\"{{KitDeliveryAddress2}}\",\n                \"KitDeliveryAddress5\":\"{{KitDeliveryAddress5}}\",\n                \"KitDeliveryAddress7\":\"{{KitDeliveryAddress7}}\",\n\t\t\t\t\"KitDeliveryAddress9\":\"{{KitDeliveryAddress9}}\",\n                \"KitDeliveryZipCode\":\"{{KitDeliveryZipCode}}\",\n\t\t\t\t\"KitDeliveryCountry\":\"{{KitDeliveryCountry}}\",\n                \"PhoneNumber\":\"{{PhoneNumber}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_009_4-Rot Tracking confirmation Online  web Account",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"4\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"11876909\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183009\",\n\t\t\t\t\"HasWebAccount\": \"TRUE\",\n\t\t\t\t\"KitDeliveryFirstName1\":\"{{KitDeliveryFirstName1}}\",\n \t\t\t\t\"KitDeliveryLastName1\":\"{{KitDeliveryLastName1}}\",\n\t\t\t\t\"KitDeliveryFirstName2\":\"{{KitDeliveryFirstName2}}\",\n\t\t\t\t\"KitDeliveryLastName2\":\"{{KitDeliveryLastName2}}\",\n\t\t\t\t\"KitDeliveryAddress2\":\"{{KitDeliveryAddress2}}\",\n                \"KitDeliveryAddress5\":\"{{KitDeliveryAddress5}}\",\n                \"KitDeliveryAddress7\":\"{{KitDeliveryAddress7}}\",\n\t\t\t\t\"KitDeliveryAddress9\":\"{{KitDeliveryAddress9}}\",\n                \"KitDeliveryZipCode\":\"{{KitDeliveryZipCode}}\",\n\t\t\t\t\"KitDeliveryCountry\":\"{{KitDeliveryCountry}}\",\n                \"PhoneNumber\":\"{{PhoneNumber}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_010_5- Rot Activation No Web Account",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"10\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"10\",\n                \"EmailAddress\": \"{{sender}}\",\n                \"Scenario\": \"01\",\n\t\t\t\t\"CustomerID\": \"10\",\n                \"EmailId\": \"5\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183010\",\n\t\t\t\t\"HasWebAccount\": \"FALSE\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\"\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_011_5- Rot Activation With Web Account",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"10\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"10\",\n                \"EmailAddress\": \"{{sender}}\",\n                \"Scenario\": \"01\",\n\t\t\t\t\"CustomerID\": \"10\",\n                \"EmailId\": \"5\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183011\",\n\t\t\t\t\"HasWebAccount\": \"TRUE\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_012_6-Rot_Wait_Customer_Info​ boutique",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"43\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"43\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"43\",\n                \"EmailId\": \"6\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183012\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\",\t\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\t\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_013_6-Rot_Wait_Customer_Info​ online",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"43\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"43\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"43\",\n                \"EmailId\": \"6\",\n                \"CountryCode\": \"US\",\n                \"Language\": \"EN\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"0001\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183013\",\n\t\t\t\t\"BoutiqueFirstName1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"BoutiqueAddress2\":\"653\",\n\t\t\t\t\"BoutiqueAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"BoutiqueAddress7\":\"New York\", \n\t\t\t\t\"BoutiqueAddress9\":\"NY\",\n\t\t\t\t\"BoutiqueZipCode\":\"10005\",\n\t\t\t\t\"BoutiqueCountry\":\"US\",\n\t\t\t\t\"AmbassadorPhone\": \"+1-855-220-7025\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_014_7-Rot_Estimate_Single​ boutique",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"45\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"45\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"45\",\n                \"EmailId\": \"7\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183014\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_015_7-Rot_Estimate_Single​ online",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{OAUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"45\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"45\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"45\",\n                \"EmailId\": \"7\",\n                \"CountryCode\": \"US\",\n                \"Language\": \"EN\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"0001\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183015\",\n\t\t\t\t\"BoutiqueFirstName1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"BoutiqueAddress2\":\"653\",\n\t\t\t\t\"BoutiqueAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"BoutiqueAddress7\":\"New York\", \n\t\t\t\t\"BoutiqueAddress9\":\"NY\",\n\t\t\t\t\"BoutiqueZipCode\":\"10005\",\n\t\t\t\t\"BoutiqueCountry\":\"US\",\n\t\t\t\t\"AmbassadorPhone\": \"+1-855-220-7025\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_016_8-Rot_Estimate_Remind​ boutique",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"45\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"45\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"45\",\n                \"EmailId\": \"8\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183016\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\"\t,\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_017_8-Rot_Estimate_Remind​ online",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"45\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"45\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"45\",\n                \"EmailId\": \"8\",\n                \"CountryCode\": \"US\",\n                \"Language\": \"EN\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"0001\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183017\",\n\t\t\t\t\"BoutiqueFirstName1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"BoutiqueAddress2\":\"653\",\n\t\t\t\t\"BoutiqueAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"BoutiqueAddress7\":\"New York\", \n\t\t\t\t\"BoutiqueAddress9\":\"NY\",\n\t\t\t\t\"BoutiqueZipCode\":\"10005\",\n\t\t\t\t\"BoutiqueCountry\":\"US\",\n\t\t\t\t\"AmbassadorPhone\": \"+1-855-220-7025\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_018_9-Rot_Estimate_Accepted​ boutique 110",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"26\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"26\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"26\",\n                \"EmailId\": \"9\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"OrderReason\": \"110\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183018\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_019_9-Rot_Estimate_Accepted​ online 110",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"26\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}1\",\n            \"attributes\": {\n                \"SubscriberKey\": \"26\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"26\",\n                \"EmailId\": \"9\",\n                \"CountryCode\": \"US\",\n                \"Language\": \"EN\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"0001\",\n\t\t\t\t\"OrderReason\": \"110\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183019\",\n\t\t\t\t\"BoutiqueFirstName1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"BoutiqueAddress2\":\"653\",\n\t\t\t\t\"BoutiqueAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"BoutiqueAddress7\":\"New York\", \n\t\t\t\t\"BoutiqueAddress9\":\"NY\",\n\t\t\t\t\"BoutiqueZipCode\":\"10005\",\n\t\t\t\t\"BoutiqueCountry\":\"US\",\n\t\t\t\t\"AmbassadorPhone\": \"+1-855-220-7025\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_020_9-Rot_Estimate_Accepted​ boutique 120",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"27\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"27\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"27\",\n                \"EmailId\": \"9\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"OrderReason\": \"120\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183020\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_021_9-Rot_Estimate_Accepted​ online 120",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"27\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"27\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"27\",\n                \"EmailId\": \"9\",\n                \"CountryCode\": \"US\",\n                \"Language\": \"EN\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"0001\",\n\t\t\t\t\"OrderReason\": \"120\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183021\",\n\t\t\t\t\"BoutiqueFirstname1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"BoutiqueAddress2\":\"653\",\n\t\t\t\t\"BoutiqueAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"BoutiqueAddress7\":\"New York\", \n\t\t\t\t\"BoutiqueAddress9\":\"NY\",\n\t\t\t\t\"BoutiqueZipCode\":\"10005\",\n\t\t\t\t\"BoutiqueCountry\":\"US\",\n\t\t\t\t\"AmbassadorPhone\": \"+1-855-220-7025\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_022_9-Rot_Estimate_Accepted​ boutique 130",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"28\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"28\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"28\",\n                \"EmailId\": \"9\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"OrderReason\": \"130\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183022\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_023_9-Rot_Estimate_Accepted​ online 130",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"28\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"28\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"28\",\n                \"EmailId\": \"9\",\n                \"CountryCode\": \"US\",\n                \"Language\": \"EN\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"0001\",\n\t\t\t\t\"OrderReason\": \"130\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183023\",\n\t\t\t\t\"BoutiqueFirstName1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"BoutiqueAddress2\":\"653\",\n\t\t\t\t\"BoutiqueAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"BoutiqueAddress7\":\"New York\", \n\t\t\t\t\"BoutiqueAddress9\":\"NY\",\n\t\t\t\t\"BoutiqueZipCode\":\"10005\",\n\t\t\t\t\"BoutiqueCountry\":\"US\",\n\t\t\t\t\"AmbassadorPhone\": \"+1-855-220-7025\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_024_9-Rot_Estimate_Accepted​ boutique 140",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"28\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"28\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"28\",\n                \"EmailId\": \"9\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"OrderReason\": \"140\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183024\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_025_9-Rot_Estimate_Accepted​ online 140",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"28\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"28\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"28\",\n                \"EmailId\": \"9\",\n                \"CountryCode\": \"US\",\n                \"Language\": \"EN\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"0001\",\n\t\t\t\t\"OrderReason\": \"140\",\n\t\t\t\t\"BoutiquePhoneNumber\": \"1-800-227-8437\",\n\t\t\t\t\"OrderNumber\": \"1183025\",\n\t\t\t\t\"BoutiqueFirstName1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"BoutiqueAddress2\":\"653\",\n\t\t\t\t\"BoutiqueAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"BoutiqueAddress7\":\"New York\", \n\t\t\t\t\"BoutiqueAddress9\":\"NY\",\n\t\t\t\t\"BoutiqueZipCode\":\"10005\",\n\t\t\t\t\"BoutiqueCountry\":\"US\",\n\t\t\t\t\"AmbassadorPhone\": \"+1-855-220-7025\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_026_10-Rot Estimate Refused",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{OAUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"10\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"02\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"118729\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183026\",\n\t\t\t\t\"HasWebAccount\": \"TRUE\",\n                \"PhoneNumber\":\"1-800-227-8437\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_027_11-Rot_Estimate_Rejected",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"49\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"49\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"49\",\n                \"EmailId\": \"11\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"OrderNumber\": \"1183027\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_028_12-Rot_Available_Pickup",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"50\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"50\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"50\",\n                \"EmailId\": \"12\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"OrderNumber\": \"1183028\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\",\n                \"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_029_13-Rot_Available_Pickup_Reminder​",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"51\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"51\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"51\",\n                \"EmailId\": \"13\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"OrderNumber\": \"1183029\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\",\n                \"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_030_14-Rot Payment waiting",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"14\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"118300024\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183030\",\n\t\t\t\t\"HasWebAccount\": \"TRUE\",\n                \"PhoneNumber\":\"1-800-227-8437\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_031_15-Rot Payment waiting reminder",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{OAUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"15\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"1183025\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183031\",\n\t\t\t\t\"HasWebAccount\": \"TRUE\",\n                \"PhoneNumber\":\"1-800-227-8437\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_032_16-Rot Payment Remind CC",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{OAUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"16\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"1183000026\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183032\",\n\t\t\t\t\"HasWebAccount\": \"TRUE\",\n                \"ProductDescription\": \"Bijoux fantaise, Or gris\",\n\t\t\t\t\"ProductCode\": \"C456\",\n                \"ProductName\":\"Cartier luxury Br\",\n                \"ShippingFirstName1\":\"John\",\n\t\t\t\t\"ShippingLastName1\":\"Doe\",\n\t\t\t\t\"ShippingAddress2\":\"630\",\n\t\t\t\t\"ShippingAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"ShippingAddress7\":\"New York\",\n\t\t\t\t\"ShippingAddress9\":\"NY\",\n\t\t\t\t\"ShippingAddress1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"ShippingZipcode\":\"10006\",\n\t\t\t\t\"ShippingCountry\":\"United States of Amercia\",\n                \"PhoneNumber\":\"1-800-227-8437\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_033_17-Rot Payment",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{OAUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"17\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"11870027\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183033\",\n\t\t\t\t\"HasWebAccount\": \"TRUE\",\n                \"ProductDescription\": \"Bijoux fantaise, Or gris\",\n\t\t\t\t\"ProductCode\": \"C456\",\n                \"ProductName\":\"Cartier luxury Br\",\n                \"ShippingFirstName1\":\"John\",\n\t\t\t\t\"ShippingLastName1\":\"Doe\",\n\t\t\t\t\"ShippingAddress2\":\"630\",\n\t\t\t\t\"ShippingAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"ShippingAddress7\":\"New York\",\n\t\t\t\t\"ShippingAddress9\":\"NY\",\n\t\t\t\t\"ShippingAddress1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"ShippingZipcode\":\"10006\",\n\t\t\t\t\"ShippingCountry\":\"United States of Amercia\",\n                \"PhoneNumber\":\"1-800-227-8437\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_034_18-Rot Delivery confirmation",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"18\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n                \"PreregistrationNumber\": \"11870028\",\n\t\t\t\t\"CreationDate\": \"11/4/2020\",\n\t\t\t\t\"OrderNumber\": \"1183034\",\n\t\t\t\t\"HasWebAccount\": \"TRUE\",\n                \"ProductDescription\": \"Bijoux fantaise, Or gris\",\n\t\t\t\t\"ProductCode\": \"C456\",\n                \"ProductName\":\"Cartier luxury Br\",\n                \"ShippingFirstName1\":\"John\",\n\t\t\t\t\"ShippingLastName1\":\"Doe\",\n\t\t\t\t\"ShippingAddress2\":\"630\",\n\t\t\t\t\"ShippingAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"ShippingAddress7\":\"New York\",\n\t\t\t\t\"ShippingAddress9\":\"NY\",\n\t\t\t\t\"ShippingAddress1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"ShippingZipcode\":\"10006\",\n\t\t\t\t\"ShippingCountry\":\"United States of Amercia\",\n                \"PhoneNumber\":\"1-800-227-8437\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_035_19-Rot_Cancelled​ boutique",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"58\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"58\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"58\",\n                \"EmailId\": \"19\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"01\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"OrderNumber\": \"1183035\",\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\",\n\t\t\t\t\"BoutiqueFirstName1\":\"{{BoutiqueFirstName1}}\",\n\t\t\t\t\"BoutiqueAddress2\":\"{{BoutiqueAddress2}}\",\n\t\t\t\t\"BoutiqueAddress5\":\"{{BoutiqueAddress5}}\",\n\t\t\t\t\"BoutiqueAddress7\":\"{{BoutiqueAddress7}}\", \n\t\t\t\t\"BoutiqueAddress9\":\"{{BoutiqueAddress9}}\",\n\t\t\t\t\"BoutiqueZipCode\":\"{{BoutiqueZipCode}}\",\n\t\t\t\t\"BoutiqueCountry\":\"{{BoutiqueCountry}}\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_036_19-Rot_Cancelled​ online",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{OAUTH_TOKEN}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"58\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"58\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"58\",\n                \"EmailId\": \"19\",\n                \"CountryCode\": \"US\",\n                \"Language\": \"EN\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"0001\",\n\t\t\t\t\"OrderNumber\": \"1183036\",\n\t\t\t\t\"MaisonWebSite\":\"\",\n\t\t\t\t\"BoutiqueFirstName1\":\"Cartier 5th Avenue Mansion\",\n\t\t\t\t\"BoutiqueAddress2\":\"653\",\n\t\t\t\t\"BoutiqueAddress5\":\"Fifth Avenue\",\n\t\t\t\t\"BoutiqueAddress7\":\"New York\", \n\t\t\t\t\"BoutiqueAddress9\":\"NY\",\n\t\t\t\t\"BoutiqueZipCode\":\"10005\",\n\t\t\t\t\"BoutiqueCountry\":\"US\",\n                \"BoutiquePhoneNumber\": \"+1-855-220-7025\",\n\t\t\t\t\"AmbassadorPhone\": \"+1-855-220-7025\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC_037_20-Rot Payment Failed",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var MC_ENV = pm.environment.get(\"MC_ENV\");\r",
+									"var OAUTH_TOKEN = pm.environment.get(\"OAUTH_TOKEN\");\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"var  timestamp  = moment().format(\"DDMMYYYYkkmmss\");\r",
+									"var  messageKey  = pm.iterationData.get(\"messageKeyInitial\") + timestamp;\r",
+									"\r",
+									"pm.variables.set(\"messageKey\", messageKey);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {\r",
+									"    setTimeout(function(){\r",
+									"        console.log(\"Sleeping for 1 second before next request.\");\r",
+									"    }, 3000);\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([201, 202]);   \r",
+									"});\r",
+									"\r",
+									"var jsonData; \r",
+									"try {\r",
+									"    jsonData = pm.response.json(); \r",
+									"} catch (err) {\r",
+									"    console.log(err); \r",
+									"}\r",
+									"\r",
+									"pm.test(\"Email sent without error\", function () {   \r",
+									"    pm.expect(jsonData.errorcode).eql(0);  \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{OAUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"definitionKey\": \"{{definitionKey}}\",\n    \"recipients\": [\n        {\n            \"contactKey\": \"60\",\n            \"to\": \"{{recipient}}\",\n            \"messageKey\": \"{{messageKey}}\",\n            \"attributes\": {\n                \"SubscriberKey\": \"60\",\n                \"EmailAddress\": \"{{sender}}\",\n\t\t\t\t\"CustomerID\": \"60\",\n                \"EmailId\": \"20\",\n                \"CountryCode\": \"{{CountryCode}}\",\n                \"Language\": \"{{Language}}\",\n                \"Scenario\":\"03\",\n                \"MaisonCode\": \"{{MaisonCode}}\",\n                \"FirstName1\": \"{{FirstName1}}\",\n                \"LastName1\": \"{{LastName1}}\",\n                \"Title\": \"{{Title}}\",\n\t\t\t\t\"OrderNumber\": \"1183037\",\n\t\t\t\t\"AmbassadorPhone\": \"{{AmbassadorPhone}}\",\n\t\t\t\t\"AmbassadorEmail\": \"{{AmbassadorEmail}}\",\t\n\t\t\t\t\"MaisonWebSite\":\"{{MaisonWebSite}}\"\t\t\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{MC_ENV}}.rest.marketingcloudapis.com/messaging/v1/email/messages",
+							"protocol": "https",
+							"host": [
+								"{{MC_ENV}}",
+								"rest",
+								"marketingcloudapis",
+								"com"
+							],
+							"path": [
+								"messaging",
+								"v1",
+								"email",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

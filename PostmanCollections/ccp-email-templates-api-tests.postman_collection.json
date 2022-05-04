@@ -1,0 +1,482 @@
+{
+	"info": {
+		"_postman_id": "46f367ed-97f2-4d56-9a26-dbc19bb81d9a",
+		"name": "006-ccp email template testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1 - Check Warranty_Extension_Successful Email Template",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"pm.test(\"Body is correct\", function () {",
+							"    pm.response.to.have.body(\"<h1>200 OK - SENT</h1>\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var appUser = pm.environment.get(\"appUser\");\r",
+							"var appPassword = pm.environment.get(\"appPassword\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{appPassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{appUser}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n<Email xmlns=\"urn:esvc:ric:namespace:email/1.0\" xmlns:ns2=\"urn:esvc:ric:namespace:customer/1.0\" xmlns:ns4=\"urn:esvc:ric:namespace:notification/1.0\" xmlns:ns3=\"urn:esvc:ric:namespace:warranty/1.0\">\r\n    <Service>\r\n        <Template>urn:esvc:{{brand}}:email-template:Warranty_Extension_Successful/{{language}}_{{country}}</Template>\r\n        <XRef>1f6f8beb-db76-4f7d-8268-f487ab4f77bd</XRef>\r\n        <LogMessage></LogMessage>\r\n        <CallBackUrl></CallBackUrl>\r\n        <Delivery>\r\n            <Synchronous>Synchronous</Synchronous>\r\n        </Delivery>\r\n    </Service>\r\n    <Model>\r\n        <Head>\r\n            <From></From>\r\n            <To>ric.uat.{{brand}}+testemail@hotmail.com</To>\r\n        </Head>\r\n        <ns3:Warranty>\r\n            <ns3:Product>\r\n                <ns3:Description>Pink Gold, 39 mm, Manual-winding</ns3:Description>\r\n                <ns3:ImageUrl>https://s3.eu-central-1.amazonaws.com/ccp-quality-asset-products/JL/Q1/29/25/20/email/product.png</ns3:ImageUrl>\r\n                <ns3:Name>Master Ultra Thin 1907</ns3:Name>\r\n                <ns3:Reference>Q1292520</ns3:Reference>\r\n                <ns3:Serial>3080004</ns3:Serial>\r\n                <ns3:Type>WATCHES</ns3:Type>\r\n            </ns3:Product>\r\n            <ns3:EndDate>2019-05-31T00:00:00.000Z</ns3:EndDate>\r\n            <ns3:ExtensionEndDate>2025-05-31T00:00:00.000Z</ns3:ExtensionEndDate>\r\n            <ns3:ExtensionRequestDate>2019-07-31T08:04:19.898Z</ns3:ExtensionRequestDate>\r\n            <ns3:ExtensionStartDate>2019-06-01T00:00:00.000Z</ns3:ExtensionStartDate>\r\n            <ns3:StartDate>2017-06-01T00:00:00.000Z</ns3:StartDate>\r\n            <ns3:Uid>98bad131-97b4-4ab4-b58e-33a972832e8a</ns3:Uid>\r\n            <ns3:CallbackUrl>{{callbackUrl}}</ns3:CallbackUrl>\r\n        </ns3:Warranty>\r\n        <ns2:Customer>\r\n            <ns2:NameAndPhone>\r\n                <ns2:Gender>0001</ns2:Gender>\r\n                <ns2:Title>0001</ns2:Title>\r\n                <ns2:FirstName1>Kaoutar</ns2:FirstName1>\r\n                <ns2:LastName1>test</ns2:LastName1>\r\n            </ns2:NameAndPhone>\r\n            <ns2:CustomerNumber>10896426</ns2:CustomerNumber>\r\n            <ns2:AccountCreationDate>2019-03-26T15:38:01.000Z</ns2:AccountCreationDate>\r\n            <ns2:Email>ric.uat.{{brand}}+testemail@hotmail.com</ns2:Email>\r\n            <ns2:WebsiteCountry>{{country}}</ns2:WebsiteCountry>\r\n            <ns2:PreferredLanguage>{{language}}</ns2:PreferredLanguage>\r\n            <ns2:ContactByBrand>true</ns2:ContactByBrand>\r\n            <ns2:NewsletterAccount>true</ns2:NewsletterAccount>\r\n        </ns2:Customer>\r\n    </Model>\r\n    <Attachments/>\r\n    <InlineImages/>\r\n    <History/>\r\n</Email>"
+				},
+				"url": {
+					"raw": "https://{{ESI_URL}}/svc/email/v1/{{brand}}",
+					"protocol": "https",
+					"host": [
+						"{{ESI_URL}}"
+					],
+					"path": [
+						"svc",
+						"email",
+						"v1",
+						"{{brand}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2 - Check Warranty_Extension_Under_Review Email Template",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"pm.test(\"Body is correct\", function () {",
+							"    pm.response.to.have.body(\"<h1>200 OK - SENT</h1>\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var appUser = pm.environment.get(\"appUser\");\r",
+							"var appPassword = pm.environment.get(\"appPassword\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{appPassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{appUser}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n<Email xmlns=\"urn:esvc:ric:namespace:email/1.0\" xmlns:ns2=\"urn:esvc:ric:namespace:customer/1.0\" xmlns:ns4=\"urn:esvc:ric:namespace:notification/1.0\" xmlns:ns3=\"urn:esvc:ric:namespace:warranty/1.0\">\r\n    <Service>\r\n        <Template>urn:esvc:{{brand}}:email-template:Warranty_Extension_Under_Review/{{language}}_{{country}}</Template>\r\n        <XRef>1f6f8beb-db76-4f7d-8268-f487ab4f77bd</XRef>\r\n        <LogMessage></LogMessage>\r\n        <CallBackUrl></CallBackUrl>\r\n        <Delivery>\r\n            <Synchronous>Synchronous</Synchronous>\r\n        </Delivery>\r\n    </Service>\r\n    <Model>\r\n        <Head>\r\n            <From></From>\r\n            <To>ric.uat.{{brand}}+testemail@hotmail.com</To>\r\n        </Head>\r\n        <ns3:Warranty>\r\n            <ns3:Product>\r\n                <ns3:Description>Pink Gold, 39 mm, Manual-winding</ns3:Description>\r\n                <ns3:ImageUrl>https://s3.eu-central-1.amazonaws.com/ccp-quality-asset-products/JL/Q1/29/25/20/email/product.png</ns3:ImageUrl>\r\n                <ns3:Name>Master Ultra Thin 1907</ns3:Name>\r\n                <ns3:Reference>Q1292520</ns3:Reference>\r\n                <ns3:Serial>3080004</ns3:Serial>\r\n                <ns3:Type>WATCHES</ns3:Type>\r\n            </ns3:Product>\r\n            <ns3:EndDate>2019-05-31T00:00:00.000Z</ns3:EndDate>\r\n            <ns3:ExtensionEndDate>2025-05-31T00:00:00.000Z</ns3:ExtensionEndDate>\r\n            <ns3:ExtensionRequestDate>2019-07-31T08:04:19.898Z</ns3:ExtensionRequestDate>\r\n            <ns3:ExtensionStartDate>2019-06-01T00:00:00.000Z</ns3:ExtensionStartDate>\r\n            <ns3:StartDate>2017-06-01T00:00:00.000Z</ns3:StartDate>\r\n            <ns3:Uid>98bad131-97b4-4ab4-b58e-33a972832e8a</ns3:Uid>\r\n            <ns3:CallbackUrl>{{callbackUrl}}</ns3:CallbackUrl>\r\n        </ns3:Warranty>\r\n        <ns2:Customer>\r\n            <ns2:NameAndPhone>\r\n                <ns2:Gender>0001</ns2:Gender>\r\n                <ns2:Title>0001</ns2:Title>\r\n                <ns2:FirstName1>Kaoutar</ns2:FirstName1>\r\n                <ns2:LastName1>test</ns2:LastName1>\r\n            </ns2:NameAndPhone>\r\n            <ns2:CustomerNumber>10896426</ns2:CustomerNumber>\r\n            <ns2:AccountCreationDate>2019-03-26T15:38:01.000Z</ns2:AccountCreationDate>\r\n            <ns2:Email>ric.uat.{{brand}}+testemail@hotmail.com</ns2:Email>\r\n            <ns2:WebsiteCountry>{{country}}</ns2:WebsiteCountry>\r\n            <ns2:PreferredLanguage>{{language}}</ns2:PreferredLanguage>\r\n            <ns2:ContactByBrand>true</ns2:ContactByBrand>\r\n            <ns2:NewsletterAccount>true</ns2:NewsletterAccount>\r\n        </ns2:Customer>\r\n    </Model>\r\n    <Attachments/>\r\n    <InlineImages/>\r\n    <History/>\r\n</Email>"
+				},
+				"url": {
+					"raw": "https://{{ESI_URL}}/svc/email/v1/{{brand}}",
+					"protocol": "https",
+					"host": [
+						"{{ESI_URL}}"
+					],
+					"path": [
+						"svc",
+						"email",
+						"v1",
+						"{{brand}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3 - Check Warranty_Extension_Rejected Email Template",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"pm.test(\"Body is correct\", function () {",
+							"    pm.response.to.have.body(\"<h1>200 OK - SENT</h1>\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var appUser = pm.environment.get(\"appUser\");\r",
+							"var appPassword = pm.environment.get(\"appPassword\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{appPassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{appUser}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n<Email xmlns=\"urn:esvc:ric:namespace:email/1.0\" xmlns:ns2=\"urn:esvc:ric:namespace:customer/1.0\" xmlns:ns4=\"urn:esvc:ric:namespace:notification/1.0\" xmlns:ns3=\"urn:esvc:ric:namespace:warranty/1.0\">\r\n    <Service>\r\n        <Template>urn:esvc:{{brand}}:email-template:Warranty_Extension_Rejected/{{language}}_{{country}}</Template>\r\n        <XRef>1f6f8beb-db76-4f7d-8268-f487ab4f77bd</XRef>\r\n        <LogMessage></LogMessage>\r\n        <CallBackUrl></CallBackUrl>\r\n        <Delivery>\r\n            <Synchronous>Synchronous</Synchronous>\r\n        </Delivery>\r\n    </Service>\r\n    <Model>\r\n        <Head>\r\n            <From></From>\r\n            <To>ric.uat.{{brand}}+testemail@hotmail.com</To>\r\n        </Head>\r\n        <ns3:Warranty>\r\n            <ns3:Product>\r\n                <ns3:Description>Pink Gold, 39 mm, Manual-winding</ns3:Description>\r\n                <ns3:ImageUrl>https://s3.eu-central-1.amazonaws.com/ccp-quality-asset-products/JL/Q1/29/25/20/email/product.png</ns3:ImageUrl>\r\n                <ns3:Name>Master Ultra Thin 1907</ns3:Name>\r\n                <ns3:Reference>Q1292520</ns3:Reference>\r\n                <ns3:Serial>3080004</ns3:Serial>\r\n                <ns3:Type>WATCHES</ns3:Type>\r\n            </ns3:Product>\r\n            <ns3:EndDate>2019-05-31T00:00:00.000Z</ns3:EndDate>\r\n            <ns3:ExtensionEndDate>2025-05-31T00:00:00.000Z</ns3:ExtensionEndDate>\r\n            <ns3:ExtensionRequestDate>2019-07-31T08:04:19.898Z</ns3:ExtensionRequestDate>\r\n            <ns3:ExtensionStartDate>2019-06-01T00:00:00.000Z</ns3:ExtensionStartDate>\r\n            <ns3:StartDate>2017-06-01T00:00:00.000Z</ns3:StartDate>\r\n            <ns3:Uid>98bad131-97b4-4ab4-b58e-33a972832e8a</ns3:Uid>\r\n            <ns3:CallbackUrl>{{callbackUrl}}</ns3:CallbackUrl>\r\n        </ns3:Warranty>\r\n        <ns2:Customer>\r\n            <ns2:NameAndPhone>\r\n                <ns2:Gender>0001</ns2:Gender>\r\n                <ns2:Title>0001</ns2:Title>\r\n                <ns2:FirstName1>Kaoutar</ns2:FirstName1>\r\n                <ns2:LastName1>test</ns2:LastName1>\r\n            </ns2:NameAndPhone>\r\n            <ns2:CustomerNumber>10896426</ns2:CustomerNumber>\r\n            <ns2:AccountCreationDate>2019-03-26T15:38:01.000Z</ns2:AccountCreationDate>\r\n            <ns2:Email>ric.uat.{{brand}}+testemail@hotmail.com</ns2:Email>\r\n            <ns2:WebsiteCountry>{{country}}</ns2:WebsiteCountry>\r\n            <ns2:PreferredLanguage>{{language}}</ns2:PreferredLanguage>\r\n            <ns2:ContactByBrand>true</ns2:ContactByBrand>\r\n            <ns2:NewsletterAccount>true</ns2:NewsletterAccount>\r\n        </ns2:Customer>\r\n    </Model>\r\n    <Attachments/>\r\n    <InlineImages/>\r\n    <History/>\r\n</Email>"
+				},
+				"url": {
+					"raw": "https://{{ESI_URL}}/svc/email/v1/{{brand}}",
+					"protocol": "https",
+					"host": [
+						"{{ESI_URL}}"
+					],
+					"path": [
+						"svc",
+						"email",
+						"v1",
+						"{{brand}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4 - Check Warranty_Extension_No_Sellout Email Template",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"pm.test(\"Body is correct\", function () {",
+							"    pm.response.to.have.body(\"<h1>200 OK - SENT</h1>\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var appUser = pm.environment.get(\"appUser\");\r",
+							"var appPassword = pm.environment.get(\"appPassword\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{appPassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{appUser}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/xml",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n<Email xmlns=\"urn:esvc:ric:namespace:email/1.0\" xmlns:ns2=\"urn:esvc:ric:namespace:customer/1.0\" xmlns:ns4=\"urn:esvc:ric:namespace:notification/1.0\" xmlns:ns3=\"urn:esvc:ric:namespace:warranty/1.0\">\r\n    <Service>\r\n        <Template>urn:esvc:{{brand}}:email-template:Warranty_Extension_No_Sellout/{{language}}_{{country}}</Template>\r\n        <XRef>1f6f8beb-db76-4f7d-8268-f487ab4f77bd</XRef>\r\n        <LogMessage></LogMessage>\r\n        <CallBackUrl></CallBackUrl>\r\n        <Delivery>\r\n            <Synchronous>Synchronous</Synchronous>\r\n        </Delivery>\r\n    </Service>\r\n    <Model>\r\n        <Head>\r\n            <From></From>\r\n            <To>ric.uat.{{brand}}+testemail@hotmail.com</To>\r\n        </Head>\r\n        <ns3:Warranty>\r\n            <ns3:Product>\r\n                <ns3:Description>Pink Gold, 39 mm, Manual-winding</ns3:Description>\r\n                <ns3:ImageUrl>https://s3.eu-central-1.amazonaws.com/ccp-quality-asset-products/JL/Q1/29/25/20/email/product.png</ns3:ImageUrl>\r\n                <ns3:Name>Master Ultra Thin 1907</ns3:Name>\r\n                <ns3:Reference>Q1292520</ns3:Reference>\r\n                <ns3:Serial>3080004</ns3:Serial>\r\n                <ns3:Type>WATCHES</ns3:Type>\r\n            </ns3:Product>\r\n            <ns3:EndDate>2019-05-31T00:00:00.000Z</ns3:EndDate>\r\n            <ns3:ExtensionEndDate>2025-05-31T00:00:00.000Z</ns3:ExtensionEndDate>\r\n            <ns3:ExtensionRequestDate>2019-07-31T08:04:19.898Z</ns3:ExtensionRequestDate>\r\n            <ns3:ExtensionStartDate>2019-06-01T00:00:00.000Z</ns3:ExtensionStartDate>\r\n            <ns3:StartDate>2019-06-01T00:00:00.000Z</ns3:StartDate>\r\n            <ns3:Uid>98bad131-97b4-4ab4-b58e-33a972832e8a</ns3:Uid>\r\n            <ns3:CallbackUrl>{{callbackUrl}}</ns3:CallbackUrl>\r\n        </ns3:Warranty>\r\n        <ns2:Customer>\r\n            <ns2:NameAndPhone>\r\n                <ns2:Gender>0001</ns2:Gender>\r\n                <ns2:Title>0001</ns2:Title>\r\n                <ns2:FirstName1>Kaoutar</ns2:FirstName1>\r\n                <ns2:LastName1>test</ns2:LastName1>\r\n            </ns2:NameAndPhone>\r\n            <ns2:CustomerNumber>10896426</ns2:CustomerNumber>\r\n            <ns2:AccountCreationDate>2019-03-26T15:38:01.000Z</ns2:AccountCreationDate>\r\n            <ns2:Email>ric.uat.{{brand}}+testemail@hotmail.com</ns2:Email>\r\n            <ns2:WebsiteCountry>{{country}}</ns2:WebsiteCountry>\r\n            <ns2:PreferredLanguage>{{language}}</ns2:PreferredLanguage>\r\n            <ns2:ContactByBrand>true</ns2:ContactByBrand>\r\n            <ns2:NewsletterAccount>true</ns2:NewsletterAccount>\r\n        </ns2:Customer>\r\n    </Model>\r\n    <Attachments/>\r\n    <InlineImages/>\r\n    <History/>\r\n</Email>",
+					"options": {
+						"raw": {
+							"language": "xml"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{ESI_URL}}/svc/email/v1/{{brand}}",
+					"protocol": "https",
+					"host": [
+						"{{ESI_URL}}"
+					],
+					"path": [
+						"svc",
+						"email",
+						"v1",
+						"{{brand}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5 - Check Confirm_Token Email Template",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"pm.test(\"Body is correct\", function () {",
+							"    pm.response.to.have.body(\"<h1>200 OK - SENT</h1>\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var appUser = pm.environment.get(\"appUser\");\r",
+							"var appPassword = pm.environment.get(\"appPassword\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{appPassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{appUser}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Email xmlns=\"urn:esvc:ric:namespace:email/1.0\">\n    <Service>\n        <Template>urn:esvc:{{brand}}:email-template:Confirm_Token/{{language}}_{{country}}</Template>\n        <XRef>5c11fe62-28f6-48e7-abad-01d94060be0c</XRef>\n        <LogMessage></LogMessage>\n        <CallBackUrl></CallBackUrl>\n        <Delivery>\n            <Synchronous>Synchronous</Synchronous>\n        </Delivery>\n    </Service>\n    <Model>\n        <Head>\n            <From></From>\n            <To>ric.uat.{{brand}}+testemail@hotmail.com</To>\n        </Head>\n        <ns1:Customer xmlns:ns1=\"urn:esvc:ric:namespace:customer/1.0\">\n            <ns1:NameAndPhone>\n                <ns1:Gender>0001</ns1:Gender>\n                <ns1:Title>0001</ns1:Title>\n                <ns1:FirstName1>Kaoutar</ns1:FirstName1>\n                <ns1:LastName1>test</ns1:LastName1>\n            </ns1:NameAndPhone>\n            <ns1:LegacyNumber>0030896885</ns1:LegacyNumber>\n            <ns1:CustomerNumber>10896426</ns1:CustomerNumber>\n            <ns1:AccountToken>\n                <ns1:Token>24210ffa-7376-4e67-ab02-e71256b66792</ns1:Token>\n                <ns1:Url>https://example.com/api/customer/customer/confirm?callbackUrl=%2Ffr%2Foptin%2Fsuccess%3Fserial%3D3403090</ns1:Url>\n                <ns1:Language>fr</ns1:Language>\n            </ns1:AccountToken>\n            <ns1:Password>4d7adb23-ac2a-40de-aedb-a86eb4754b40</ns1:Password>\n            <ns1:AccountCreationDate>2018-02-20T17:30:41.000Z</ns1:AccountCreationDate>\n            <ns1:AccountUpdateDate>2018-02-20T17:30:41.000Z</ns1:AccountUpdateDate>\n            <ns1:Email>ric.uat.{{brand}}+testemail@hotmail.com</ns1:Email>\n            <ns1:WebsiteCountry>US</ns1:WebsiteCountry>\n            <ns1:PreferredLanguage>fr</ns1:PreferredLanguage>\n            <ns1:ContactByBrand>true</ns1:ContactByBrand>\n            <ns1:NewsletterAccount>false</ns1:NewsletterAccount>\n            <ns1:Informations>\n                <ns1:Information>\n                    <ns1:Characteristic>ZZORIGINSITE</ns1:Characteristic>\n                    <ns1:CharacteristicValue>101</ns1:CharacteristicValue>\n                </ns1:Information>\n                <ns1:Information>\n                    <ns1:Characteristic>ZZCLIENTNEWSLETTER</ns1:Characteristic>\n                    <ns1:CharacteristicValue>0</ns1:CharacteristicValue>\n                </ns1:Information>\n            </ns1:Informations>\n        </ns1:Customer>\n    </Model>\n    <Attachments/>\n    <InlineImages/>\n    <History>\n        <Event time=\"2020-04-23T06:42:27.685Z\" name=\"EMAIL_CREATED\">Confirm_Token - Customer: 10173286</Event>\n    </History>\n</Email>",
+					"options": {
+						"raw": {
+							"language": "xml"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{ESI_URL}}/svc/email/v1/{{brand}}",
+					"protocol": "https",
+					"host": [
+						"{{ESI_URL}}"
+					],
+					"path": [
+						"svc",
+						"email",
+						"v1",
+						"{{brand}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6 - Check Customer_Join_The_Care_Program Email Template",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"pm.test(\"Body is correct\", function () {",
+							"    pm.response.to.have.body(\"<h1>200 OK - SENT</h1>\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var appUser = pm.environment.get(\"appUser\");\r",
+							"var appPassword = pm.environment.get(\"appPassword\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{appPassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{appUser}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Email xmlns=\"urn:esvc:ric:namespace:email/1.0\"\nxmlns:ns2=\"urn:esvc:ric:namespace:customer/1.0\"\n       xmlns:ns3=\"urn:esvc:ric:namespace:warranty/1.0\">\n    <Service>\n        <Template>urn:esvc:{{brand}}:email-template:Customer_Join_The_Care_Program/{{language}}_{{country}}</Template>\n        <XRef>5c11fe62-28f6-48e7-abad-01d94060be0c</XRef>\n        <LogMessage></LogMessage>\n        <CallBackUrl></CallBackUrl>\n        <Delivery>\n            <Synchronous>Synchronous</Synchronous>\n        </Delivery>\n    </Service>\n    <Model>\n        <Head>\n            <From></From>\n            <To>ric.uat.{{brand}}+testemail@hotmail.com</To>\n        </Head>\n        <ns3:Warranty>\n            <ns3:Product>\n                <ns3:Description>Pink Gold, 39 mm, Manual-winding</ns3:Description>\n                <ns3:ImageUrl>https://s3.eu-central-1.amazonaws.com/ccp-quality-asset-products/JL/Q1/29/25/20/email/product.png</ns3:ImageUrl>\n                <ns3:Name>Master Ultra Thin 1907</ns3:Name>\n                <ns3:Reference>Q1292520</ns3:Reference>\n                <ns3:Serial>3080004</ns3:Serial>\n                <ns3:Type>WATCHES</ns3:Type>\n            </ns3:Product>\n            <ns3:EndDate>2019-05-31T00:00:00.000Z</ns3:EndDate>\n            <ns3:ExtensionEndDate>2025-05-31T00:00:00.000Z</ns3:ExtensionEndDate>\n            <ns3:ExtensionRequestDate>2019-07-31T08:04:19.898Z</ns3:ExtensionRequestDate>\n            <ns3:ExtensionStartDate>2019-06-01T00:00:00.000Z</ns3:ExtensionStartDate>\n            <ns3:StartDate>2017-06-01T00:00:00.000Z</ns3:StartDate>\n            <ns3:Uid>98bad131-97b4-4ab4-b58e-33a972832e8a</ns3:Uid>\n            <ns3:CallbackUrl>{{callbackUrl}}</ns3:CallbackUrl>\n        </ns3:Warranty>\n        <ns2:Customer>\n            <ns2:NameAndPhone>\n                <ns2:Gender>0001</ns2:Gender>\n                <ns2:Title>0001</ns2:Title>\n                <ns2:FirstName1>Kaoutar</ns2:FirstName1>\n                <ns2:LastName1>test</ns2:LastName1>\n            </ns2:NameAndPhone>\n            <ns2:CustomerNumber>10896426</ns2:CustomerNumber>\n            <ns2:AccountCreationDate>2019-03-26T15:38:01.000Z</ns2:AccountCreationDate>\n            <ns2:Email>ric.uat.{{brand}}+testemail@hotmail.com</ns2:Email>\n            <ns2:WebsiteCountry>{{country}}</ns2:WebsiteCountry>\n            <ns2:PreferredLanguage>{{language}}</ns2:PreferredLanguage>\n            <ns2:ContactByBrand>true</ns2:ContactByBrand>\n            <ns2:NewsletterAccount>true</ns2:NewsletterAccount>\n        </ns2:Customer>\n    </Model>\n    <Attachments/>\n    <InlineImages/>\n    <History>\n        <Event time=\"2020-04-23T06:42:27.685Z\" name=\"EMAIL_CREATED\">Customer_Join_The_Care_Program - Customer: 10173286</Event>\n    </History>\n</Email>",
+					"options": {
+						"raw": {
+							"language": "xml"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{ESI_URL}}/svc/email/v1/{{brand}}",
+					"protocol": "https",
+					"host": [
+						"{{ESI_URL}}"
+					],
+					"path": [
+						"svc",
+						"email",
+						"v1",
+						"{{brand}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
